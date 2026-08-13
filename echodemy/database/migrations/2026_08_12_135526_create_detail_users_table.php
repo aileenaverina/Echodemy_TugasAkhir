@@ -22,8 +22,10 @@ return new class extends Migration
             $table->string('nama_ortu', 45)->nullable();
             $table->string('nomor_telepon_ortu_wali', 45)->nullable();
             $table->string('foto_profil', 100)->nullable();
-            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
+            $table->enum('status', ['aktif', 'nonaktif', 'lulus', 'keluar'])->default('aktif');
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

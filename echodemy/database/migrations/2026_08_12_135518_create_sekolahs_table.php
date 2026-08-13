@@ -15,16 +15,17 @@ return new class extends Migration
             $table->id();
             $table->string('nama', 500);
             $table->string('npsn', 8)->unique();
-            $table->string('detail_alamat', 500)->nullable();
-            $table->string('nomor_telepon', 45)->nullable();
+            $table->string('detail_alamat', 500);
+            $table->string('nomor_telepon', 45);
             $table->string('email')->unique();
-            $table->string('logo')->nullable();
+            $table->string('logo');
             $table->string('singkatan', 5);
-            $table->enum('jenjang', ['SD', 'SMP', 'SMA']);
+            $table->enum('jenjang', ['SD', 'SMP', 'SMA', 'MA', 'MK', 'SMK']);
             $table->string('wilayah_kode')->nullable();
             $table->boolean('is_active')->default(true);
             $table->tinyInteger('status')->default(0)->comment('0=pending,1=approved,2=rejected');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('wilayah_kode')->references('kode')->on('wilayahs')->nullOnDelete();
         });

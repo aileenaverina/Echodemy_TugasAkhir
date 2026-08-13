@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::view('/registration/pending', 'auth.registration-pending')->name('registration.pending');
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/sekolah-verification', [SekolahVerificationController::class, 'index'])->name('admin.sekolah-verification.index');
+    Route::post('/sekolah-verification/{sekolah}/approve', [SekolahVerificationController::class, 'approve'])->name('admin.sekolah-verification.approve');
+    Route::post('/sekolah-verification/{sekolah}/reject', [SekolahVerificationController::class, 'reject'])->name('admin.sekolah-verification.reject');
 });
 
 require __DIR__.'/auth.php';

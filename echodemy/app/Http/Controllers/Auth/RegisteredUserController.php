@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sekolah;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register',  [
+            'wilayahs' => \App\Models\Wilayah::orderBy('nama')->get(),
+        ]);
     }
 
     /**
@@ -31,21 +34,36 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'nama' => ['required', 'string', 'max:500'],
+            'npsn' => ['required', 'string', 'size:8', 'unique:sekolahs,npsn'],
+            'singkatan' => ['required', 'string', 'max:5'],
+            'jenjang' => ['required', 'in:SD,SMP,SMA'],
+            'wilayah_kode' => ['nullable', 'exists:wilayahs,kode'],
+            'detail_alamat' => ['nullable', 'string', 'max:500'],
+            'nomor_telepon' => ['nullable', 'string', 'max:45'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:sekolahs,email'],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('sekolah-logos', 'public');
+        }
+
+        Sekolah::create([
+            'nama' => $request->nama,
+            'npsn' => $request->npsn,
+            'detail_alamat' => $request->detail_alamat,
+            'nomor_telepon' => $request->nomor_telepon,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'logo' => $logoPath,
+            'singkatan' => strtoupper($request->singkatan),
+            'jenjang' => $request->jenjang,
+            'wilayah_kode' => $request->wilayah_kode,
+            'is_active' => true,
+            'status' => Sekolah::STATUS_PENDING,
         ]);
 
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('registration.pending');
     }
 }
