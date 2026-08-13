@@ -34,18 +34,18 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'logo' => ['required', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
             'nama' => ['required', 'string', 'max:500'],
             'npsn' => ['required', 'string', 'size:8', 'unique:sekolahs,npsn'],
             'singkatan' => ['required', 'string', 'max:5'],
-            'jenjang' => ['required', 'in:SD,SMP,SMA'],
-            'wilayah_kode' => ['nullable', 'exists:wilayahs,kode'],
-            'detail_alamat' => ['nullable', 'string', 'max:500'],
-            'nomor_telepon' => ['nullable', 'string', 'max:45'],
+            'jenjang' => ['required', 'in:SD,SMP,SMA,MK,MA,SMK'],
+            'wilayah_kode' => ['required', 'exists:wilayahs,kode'],
+            'detail_alamat' => ['required', 'string', 'max:500'],
+            'nomor_telepon' => ['required', 'string', 'max:45'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:sekolahs,email'],
         ]);
 
-        $logoPath = null;
+        $logoPath = null;   
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('sekolah-logos', 'public');
         }
