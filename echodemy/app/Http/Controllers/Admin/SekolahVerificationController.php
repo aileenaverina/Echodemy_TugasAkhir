@@ -31,7 +31,7 @@ class SekolahVerificationController extends Controller
 
         $user = User::create([
             'role' => UserRole::Sekolah,
-            'kode_user' => strtoupper($sekolah->singkatan).'-'.str_pad($sekolah->id, 4, '0', STR_PAD_LEFT),
+            'kode_user' => strtoupper($sekolah->singkatan),
             'email' => $sekolah->email,
             'password' => Hash::make($plainPassword),
             'sekolah_id' => $sekolah->id,
@@ -44,10 +44,20 @@ class SekolahVerificationController extends Controller
         return back()->with('success', "Sekolah {$sekolah->nama} berhasil diverifikasi dan email terkirim.");
     }
 
-    public function reject(Sekolah $sekolah): RedirectResponse
+    public function reject(Request $request, Sekolah $sekolah): RedirectResponse
     {
+        $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        if ($sekolah->status !== Sekolah::STATUS_PENDING) {
+            return back()->with('error', 'Sekolah ini sudah diproses sebelumnya.');
+        }
+
         $sekolah->update(['status' => Sekolah::STATUS_REJECTED]);
 
-        return back()->with('success', "Sekolah {$sekolah->nama} ditolak.");
+        Mail::to($sekolah->email)->send(new SekolahRejectedMail($sekolah, $request->reason));
+
+        return back()->with('success', "Sekolah {$sekolah->nama} ditolak dan email pemberitahuan terkirim.");
     }
 }
