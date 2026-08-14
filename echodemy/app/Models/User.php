@@ -6,18 +6,28 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
+     */
+   
+  
+   
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
      */
     protected $fillable = [
         'role',
@@ -25,29 +35,18 @@ class User extends Authenticatable
         'kode_user',
         'email',
         'password',
+        'last_login_at',
         'detail_user_id',
         'sekolah_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
@@ -63,8 +62,40 @@ class User extends Authenticatable
         return $this->belongsTo(DetailUser::class);
     }
 
-    public function isRole(UserRole $role): bool
+    public function kelas()
     {
-        return $this->role === $role;
+        return $this->belongsToMany(Kelas::class, 'anggota_kelas');
+    }
+
+    public function mataPelajaranDiajar()
+    {
+        return $this->belongsToMany(MataPelajaran::class, 'guru_mata_pelajaran')
+            ->withPivot('kelas_id');
+    }
+
+    public function bahanAjars()
+    {
+        return $this->hasMany(BahanAjar::class);
+    }
+
+    public function progresMateris()
+    {
+        return $this->belongsToMany(Materi::class, 'progres_materis')
+            ->withPivot('is_done');
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
+
+    public function notifs()
+    {
+        return $this->hasMany(Notif::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(Log::class);
     }
 }

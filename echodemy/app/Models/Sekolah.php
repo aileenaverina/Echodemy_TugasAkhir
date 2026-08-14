@@ -27,7 +27,7 @@ class Sekolah extends Model
         'is_active' => 'boolean',
     ];
 
-    public function wilayah()
+      public function wilayah()
     {
         return $this->belongsTo(Wilayah::class, 'wilayah_kode', 'kode');
     }
@@ -35,5 +35,15 @@ class Sekolah extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(Log::class);
     }
 }
