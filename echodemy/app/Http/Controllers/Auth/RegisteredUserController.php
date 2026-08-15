@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -39,13 +40,21 @@ class RegisteredUserController extends Controller
             'npsn' => ['required', 'string', 'size:8', 'unique:sekolahs,npsn'],
             'singkatan' => ['required', 'string', 'max:5'],
             'jenjang' => ['required', 'in:SD,SMP,SMA,MK,MA,SMK'],
-            'wilayah_kode' => ['required', 'exists:wilayahs,kode'],
+            'wilayah_kode' => [
+                'required',
+                Rule::exists('wilayahs', 'kode'),
+                function ($attribute, $value, $fail) {
+                    if (substr_count($value, '.') !== 3) {
+                        $fail('Wilayah yang dipilih harus level kelurahan.');
+                    }
+                },
+            ],
             'detail_alamat' => ['required', 'string', 'max:500'],
             'nomor_telepon' => ['required', 'string', 'max:45'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:sekolahs,email'],
         ]);
 
-        $logoPath = null;   
+        $logoPath = null;
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('sekolah-logos', 'public');
         }

@@ -13,8 +13,7 @@
         </a>
 
         <div class="relative">
-            <button id="profile-menu-button" onclick="document.getElementById('profile-menu').classList.toggle('hidden')"
-                class="flex items-center gap-3">
+           <button id="profile-menu-button" class="flex items-center gap-3">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->nama_lengkap ?? 'U') }}&background=E8A84C&color=1C1A17"
                      alt="Foto profil" class="w-9 h-9 rounded-full object-cover">
                 <span class="hidden sm:inline text-sm font-medium capitalize">{{ auth()->user()->role?->value }}</span>
@@ -32,11 +31,19 @@
 </header>
 
 <script>
-document.addEventListener('click', function (e) {
-    const button = document.getElementById('profile-menu-button');
-    const menu = document.getElementById('profile-menu');
-    if (menu && !menu.classList.contains('hidden') && !button.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add('hidden');
-    }
+$(function () {
+    $('#profile-menu-button').on('click', function () {
+        $('#profile-menu').toggleClass('hidden');
+    });
+
+    $(document).on('click', function (e) {
+        const $menu = $('#profile-menu');
+        const $button = $('#profile-menu-button');
+
+        if (!$menu.hasClass('hidden') && !$button.is(e.target) && $button.has(e.target).length === 0
+            && !$menu.is(e.target) && $menu.has(e.target).length === 0) {
+            $menu.addClass('hidden');
+        }
+    });
 });
 </script>

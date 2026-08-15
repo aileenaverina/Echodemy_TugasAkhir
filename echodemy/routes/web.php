@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,6 +20,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::view('/registration/pending', 'auth.registration-pending')->name('registration.pending');
+
+Route::get('/wilayah/provinsi', [WilayahController::class, 'provinsi'])->name('wilayah.provinsi');
+Route::get('/wilayah/children/{kode}', [WilayahController::class, 'children'])->name('wilayah.children');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/sekolah-verification', [SekolahVerificationController::class, 'index'])->name('admin.sekolah-verification.index');
