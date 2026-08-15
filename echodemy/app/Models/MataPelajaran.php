@@ -11,13 +11,10 @@ class MataPelajaran extends Model
 
     protected $fillable = ['nama', 'file', 'warna'];
 
-    public function kelas()
+
+    public function penugasanKelas()
     {
-        return $this->belongsToMany(Kelas::class, 'mata_pelajaran_kelas');
+        return $this->hasMany(MataPelajaranKelas::class, 'mata_pelajaran_id');
     }
 
-    public function bahanAjars()
-    {
-        return $this->hasMany(BahanAjar::class);
-    }
 }

@@ -21,9 +21,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-   
-  
-   
+
     /**
      * Get the attributes that should be cast.
      *
@@ -62,15 +60,23 @@ class User extends Authenticatable
         return $this->belongsTo(DetailUser::class);
     }
 
-    public function kelas()
+    public function kelass()
     {
-        return $this->belongsToMany(Kelas::class, 'anggota_kelas');
+        return $this->belongsToMany(
+            Kelas::class,
+            'anggota_kelas',
+            'user_id',
+            'kelas_id'
+        );
     }
-
-    public function mataPelajaranDiajar()
+    public function mataPelajaranKelass()
     {
-        return $this->belongsToMany(MataPelajaran::class, 'guru_mata_pelajaran')
-            ->withPivot('kelas_id');
+        return $this->belongsToMany(
+            MataPelajaranKelas::class,
+            'guru_mata_pelajaran',
+            'user_id',
+            'mata_pelajaran_kelas_id'
+        );
     }
 
     public function bahanAjars()
@@ -80,7 +86,7 @@ class User extends Authenticatable
 
     public function progresMateris()
     {
-        return $this->belongsToMany(Materi::class, 'progres_materis')
+        return $this->belongsToMany(Materi::class, 'progres_materi')
             ->withPivot('is_done');
     }
 

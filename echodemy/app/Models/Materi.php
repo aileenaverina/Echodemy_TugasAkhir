@@ -24,9 +24,9 @@ class Materi extends Model
         return $this->belongsTo(BahanAjar::class);
     }
 
-    public function siswaProgres()
+    public function siswaProgress()
     {
-        return $this->belongsToMany(User::class, 'progres_materis')
+        return $this->belongsToMany(User::class, 'progres_materi')
             ->withPivot('is_done');
     }
 }

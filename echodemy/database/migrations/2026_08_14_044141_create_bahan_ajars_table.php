@@ -15,8 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('judul');
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('kelas_id')->nullable()->constrained('kelass')->cascadeOnDelete();
-            $table->foreignId('mata_pelajaran_id')->nullable()->constrained('mata_pelajarans')->cascadeOnDelete();
+            $table->foreignId('mata_pelajaran_kelas_id')->constrained('mata_pelajaran_kelas')->cascadeOnDelete();
             $table->longText('notes')->nullable();
             $table->boolean('is_lock')->default(false);
             $table->timestamps();

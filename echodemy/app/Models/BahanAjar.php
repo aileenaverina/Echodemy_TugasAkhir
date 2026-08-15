@@ -10,7 +10,12 @@ class BahanAjar extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'judul', 'user_id', 'kelas_id', 'mata_pelajaran_id', 'notes', 'is_lock',
+        'judul',
+        'user_id',
+        'kelas_id',
+        'mata_pelajaran_id',
+        'notes',
+        'is_lock',
     ];
 
     protected $casts = [
@@ -22,14 +27,9 @@ class BahanAjar extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function kelas()
+    public function mataPelajaranKelas()
     {
-        return $this->belongsTo(Kelas::class);
-    }
-
-    public function mataPelajaran()
-    {
-        return $this->belongsTo(MataPelajaran::class);
+        return $this->belongsTo(MataPelajaranKelas::class);
     }
 
     public function materis()
