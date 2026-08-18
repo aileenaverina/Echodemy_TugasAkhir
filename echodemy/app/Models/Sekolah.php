@@ -27,7 +27,7 @@ class Sekolah extends Model
         'is_active' => 'boolean',
     ];
 
-      public function wilayah()
+    public function wilayah()
     {
         return $this->belongsTo(Wilayah::class, 'wilayah_kode', 'kode');
     }
@@ -45,5 +45,22 @@ class Sekolah extends Model
     public function logs()
     {
         return $this->hasMany(Log::class);
+    }
+
+    public function kotaKabupaten(): ?string
+    {
+        if (! $this->wilayah_kode) {
+            return null;
+        }
+
+        $segments = explode('.', $this->wilayah_kode);
+
+        if (count($segments) < 2) {
+            return null;
+        }
+
+        $kabKode = $segments[0] . '.' . $segments[1];
+
+        return Wilayah::find($kabKode)?->nama;
     }
 }
