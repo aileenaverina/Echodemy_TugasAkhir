@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -103,5 +103,27 @@ class User extends Authenticatable
     public function logs()
     {
         return $this->hasMany(Log::class);
+    }
+
+    public function photoUrl(): string
+    {
+        if ($this->role?->value === 'sekolah' && $this->sekolah?->logo) {
+            return Storage::url($this->sekolah->logo);
+        }
+
+        if ($this->detailUser?->foto_profil) {
+            return Storage::url($this->detailUser->foto_profil);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->nama_lengkap ?? 'U') . '&background=F5A524&color=1C1A17';
+    }
+
+    public function displayName(): string
+    {
+        return match ($this->role?->value) {
+            'admin' => $this->kode_user,
+            'sekolah' => $this->sekolah?->nama ?? $this->nama_lengkap,
+            default => $this->nama_lengkap,
+        };
     }
 }
