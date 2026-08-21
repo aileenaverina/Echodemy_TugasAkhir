@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Manajemen Sekolah</p>
+                <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Manajemen Sekolah</p>
                 <h1 class="font-display text-2xl font-semibold">Manajemen dan Verifikasi Sekolah</h1>
             </div>
             <a href="{{ route('admin.sekolah-verification.index') }}"
@@ -77,11 +77,11 @@
                             !$sekolah->is_active => ['Nonaktif', 'bg-coral/60 text-coral'],
                             $sekolah->status === \App\Models\Sekolah::STATUS_PENDING => [
                                 'Menunggu',
-                                'bg-amber/60 text-amber',
+                                'bg-amber/60 text-hitam2',
                             ],
                             $sekolah->status === \App\Models\Sekolah::STATUS_VERIFIED => [
                                 'Aktif',
-                                'bg-periwinkle/60 text-periwinkle',
+                                'bg-periwinkle/60 text-hitam2',
                             ],
                             default => ['Ditolak', 'bg-coral/60 text-coral'],
                         };
@@ -163,7 +163,7 @@
     <div id="view-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
         <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
         <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-md p-6">
-            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Detail Sekolah</p>
+            <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Detail Sekolah</p>
             <h2 id="view-nama" class="font-display font-semibold text-lg mb-4">-</h2>
 
             <div class="space-y-3 text-sm">
@@ -196,7 +196,7 @@
     <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
         <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
         <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-md p-6">
-            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Edit Sekolah</p>
+            <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Edit Sekolah</p>
             <h2 class="font-display font-semibold text-lg mb-4">Ubah Data Sekolah</h2>
 
             <form id="edit-form" method="POST">

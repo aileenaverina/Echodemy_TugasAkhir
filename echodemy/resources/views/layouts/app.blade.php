@@ -19,13 +19,15 @@
 
 <body class="font-body bg-cream text-ink antialiased">
 
-    <x-header-user />
+    <div class="sticky top-0 z-50">
+        <x-header-user />
+    </div>
 
     <div class=" lg:flex items-start">
         <div id="sidebar-overlay" class="hidden fixed inset-0 bg-ink/30 z-30 lg:hidden"></div>
 
         <aside id="sidebar"
-            class="fixed z-40 inset-y-0 left-0 w-64 bg-putih border-r border-border px-4 py-6 -translate-x-full transition-transform duration-200 overflow-y-auto lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:shrink-0">
+            class="fixed z-40 inset-y-0 left-0 w-64 bg-putih border-r border-border px-4 py-6 -translate-x-full transition-transform duration-200 overflow-y-auto lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-56 lg:shrink-0">
             @switch(auth()->user()->role?->value)
                 @case('sekolah')
                     <x-sidebar-sekolah />

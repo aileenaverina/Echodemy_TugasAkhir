@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMataPelajaranController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $search = $request->input('search');
 
@@ -20,7 +20,7 @@ class AdminMataPelajaranController extends Controller
             $query->where('nama', 'like', "%{$search}%");
         }
 
-        $mataPelajarans = $query->orderBy('nama')->get();
+        $mataPelajarans = $query->orderBy('nama')->paginate(10)->withQueryString();
 
         return view('admin.mata-pelajaran.index', compact('mataPelajarans', 'search'));
     }

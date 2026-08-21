@@ -1,54 +1,46 @@
 <x-app-layout>
     <x-slot name="header">
-        <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Beranda</p>
+        <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Beranda</p>
         <h1 class="font-display text-2xl font-semibold">Ringkasan Platform</h1>
     </x-slot>
 
     <!-- Stat Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-putih rounded-2xl shadow-sm p-5">
+        <div class="bg-putih rounded-2xl shadow-sm p-5 border border-border">
             <div class="w-10 h-10 rounded-xl bg-periwinkle/60 flex items-center justify-center mb-4">
-                <svg class="w-5 h-5 text-periwinkle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 21V7a1 1 0 011-1h6a1 1 0 011 1v14M14 21v-7a1 1 0 011-1h4a1 1 0 011 1v7M9 9h.01M9 13h.01" />
-                </svg>
+                 <img src="{{ asset('images/school.svg') }}" alt="school" class="w-5 h-5">
             </div>
             <p class="text-3xl font-display font-semibold">{{ $stats['sekolah_terverifikasi'] }}</p>
-            <p class="text-sm text-hitam2 mt-1">Sekolah Terverifikasi</p>
+            <p class="text-sm text-cream3 mt-1">Sekolah Terverifikasi</p>
         </div>
 
-        <div class="bg-putih rounded-2xl shadow-sm p-5">
+        <div class="bg-putih rounded-2xl shadow-sm p-5 border border-border">
             <div class="w-10 h-10 rounded-xl bg-coral/60 flex items-center justify-center mb-4">
-                <svg class="w-5 h-5 text-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <img src="{{ asset('images/time.svg') }}" alt="clock" class="w-5 h-5">
             </div>
             <p class="text-3xl font-display font-semibold">{{ $stats['menunggu_verifikasi'] }}</p>
-            <p class="text-sm text-hitam2 mt-1">Menunggu Verifikasi</p>
+            <p class="text-sm text-cream3 mt-1">Menunggu Verifikasi</p>
         </div>
 
-        <div class="bg-putih rounded-2xl shadow-sm p-5">
+        <div class="bg-putih rounded-2xl shadow-sm p-5 border border-border">
             <div class="w-10 h-10 rounded-xl bg-amber/60 flex items-center justify-center mb-4">
-                <svg class="w-5 h-5 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" />
-                </svg>
+                <img src="{{ asset('images/document.svg') }}" alt="document" class="w-5 h-5">
             </div>
             <p class="text-3xl font-display font-semibold">{{ $stats['mata_pelajaran'] }}</p>
-            <p class="text-sm text-hitam2 mt-1">Mata Pelajaran Global</p>
+            <p class="text-sm text-cream3 mt-1">Mata Pelajaran Global</p>
         </div>
 
-        <div class="bg-putih rounded-2xl shadow-sm p-5">
+        <div class="bg-putih rounded-2xl shadow-sm p-5 border border-border">
             <div class="w-10 h-10 rounded-xl bg-teal/60 flex items-center justify-center mb-4">
-                <svg class="w-5 h-5 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20v-2a4 4 0 00-3-3.87M9 20v-2a4 4 0 013-3.87M13 7a4 4 0 11-8 0 4 4 0 018 0zM21 20v-2a4 4 0 00-3-3.87" />
-                </svg>
+                <img src="{{ asset('images/users.svg') }}" alt="users" class="w-5 h-5">
             </div>
             <p class="text-3xl font-display font-semibold">{{ number_format($stats['total_pengguna']) }}</p>
-            <p class="text-sm text-hitam2 mt-1">Total Pengguna</p>
+            <p class="text-sm text-cream3 mt-1 font-semibold">Total Pengguna</p>
         </div>
     </div>
 
     <!-- Permintaan Registrasi Sekolah -->
-    <h2 class="font-display text-lg font-semibold mb-3">Permintaan Registrasi Sekolah</h2>
+    <h2 class="font-body text-md font-semibold mb-3">Permintaan Registrasi Sekolah</h2>
     <div class="bg-putih rounded-2xl shadow-sm overflow-hidden mb-8">
         <table class="w-full text-sm">
             <thead>
@@ -67,11 +59,11 @@
                         <td class="px-5 py-4 text-hitam2">{{ $sekolah->created_at->diffForHumans() }}</td>
                         <td class="px-5 py-4">
                             @if ($sekolah->status === \App\Models\Sekolah::STATUS_PENDING)
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber/60 text-amber">Menunggu</span>
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber/60 text-hitam2">Menunggu</span>
                             @elseif ($sekolah->status === \App\Models\Sekolah::STATUS_VERIFIED)
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-teal/60 text-teal">Terverifikasi</span>
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-teal/60 text-hitam2">Terverifikasi</span>
                             @else
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-coral/60 text-coral">Ditolak</span>
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-coral/60 text-hitam2">Ditolak</span>
                             @endif
                         </td>
                     </tr>
@@ -85,7 +77,7 @@
     </div>
 
     <!-- Log Aktivitas -->
-    <h2 class="font-display text-lg font-semibold mb-3">Log Aktivitas</h2>
+    <h2 class="font-body text-md font-semibold mb-3">Log Aktivitas</h2>
     <div class="bg-putih rounded-2xl shadow-sm overflow-hidden">
         <table class="w-full text-sm">
             <thead>

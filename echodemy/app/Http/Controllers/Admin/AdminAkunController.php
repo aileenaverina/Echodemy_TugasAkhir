@@ -25,7 +25,7 @@ class AdminAkunController extends Controller
             ->with(['user', 'sekolah'])
             ->latest()
             ->take(10)
-            ->get();
+            ->paginate(10);
 
         return view('admin.verifikasi-akses.index', compact('admins', 'riwayat'));
     }

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Log Sistem</p>
+        <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Log Sistem</p>
         <h1 class="font-display text-2xl font-semibold">Riwayat Aktivitas Platform</h1>
     </x-slot>
 
