@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Log;
 use App\Models\Sekolah;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 class AdminSekolahController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $filter = $request->input('filter', 'semua');
         $search = $request->input('search');
@@ -21,7 +22,7 @@ class AdminSekolahController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('npsn', 'like', "%{$search}%");
+                    ->orWhere('npsn', 'like', "%{$search}%");
             });
         }
 
@@ -79,6 +80,12 @@ class AdminSekolahController extends Controller
     public function destroy(Sekolah $sekolah): RedirectResponse
     {
         $sekolah->update(['is_active' => false]);
+
+        Log::create([
+            'deskripsi' => "Menonaktifkan sekolah {$sekolah->nama}",
+            'user_id' => auth()->id(),
+            'sekolah_id' => $sekolah->id,
+        ]);
 
         return back()->with('success', "Sekolah {$sekolah->nama} berhasil dinonaktifkan.");
     }

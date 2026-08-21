@@ -12,11 +12,11 @@
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
         Manajemen Mata Pelajaran
     </x-sidebar-link>
-    <x-sidebar-link :href="route('admin.sekolah-verification.index')" :active="request()->routeIs('admin.sekolah-verification.*')">
+    <x-sidebar-link :href="route('admin.akun.index')" :active="request()->routeIs('admin.sekolah-verification.*')">
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" /></svg>
         Verifikasi & Akses
     </x-sidebar-link>
-    <x-sidebar-link :href="route('log-sistem.index')" :active="request()->routeIs('log-sistem.*')">
+    <x-sidebar-link :href="route('admin.log.index')" :active="request()->routeIs('admin.log.*')">
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" /></svg>
         Log Sistem
     </x-sidebar-link>
