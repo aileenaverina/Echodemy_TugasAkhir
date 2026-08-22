@@ -22,14 +22,16 @@
                     'semua' => 'Semua',
                     'admin' => 'Admin',
                     'sekolah' => 'Sekolah',
-                    'guru' => 'Guru',
-                    'siswa' => 'Siswa',
+                    // 'guru' => 'Guru',
+                    // 'siswa' => 'Siswa',
                 ];
+
+                 $formatCount = fn ($n) => $n > 99 ? '99+' : $n;
             @endphp
             @foreach ($tabs as $key => $label)
                 <button type="button" data-filter="{{ $key }}"
                     class="filter-tab px-4 py-2 rounded-full text-sm font-medium transition {{ $filter === $key ? 'bg-ink text-cream' : 'bg-putih text-hitam2 border border-border hover:bg-cream2' }}">
-                    {{ $label }} &middot; {{ $counts[$key] }}
+                    {{ $label }} &middot;  {{ $formatCount($counts[$key]) }}
                 </button>
             @endforeach
         </div>
