@@ -16,7 +16,7 @@
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20v-2a4 4 0 00-3-3.87M9 20v-2a4 4 0 013-3.87M13 7a4 4 0 11-8 0 4 4 0 018 0zM21 20v-2a4 4 0 00-3-3.87" /></svg>
         Siswa
     </x-sidebar-link>
-    <x-sidebar-link :href="route('log-sistem.index')" :active="request()->routeIs('log-sistem.*')">
+    <x-sidebar-link :href="route('sekolah.log.index')" :active="request()->routeIs('sekolah.log.*')">
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" /></svg>
         Log Sistem
     </x-sidebar-link>

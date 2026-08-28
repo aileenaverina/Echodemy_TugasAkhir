@@ -37,7 +37,7 @@ class AdminAkunController extends Controller
             'kode_user' => $akun->kode_user,
             'email' => $akun->email,
             'last_login_at' => $akun->last_login_at?->format('d/m/y H.i.s') ?? 'Belum pernah login',
-            'created_at' => $akun->created_at->format('d/m/y H.i.s'),
+            'created_at' => $akun->created_at?->format('d/m/y H.i.s') ?? '-',
         ]);
     }
 

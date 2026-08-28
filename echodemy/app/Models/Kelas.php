@@ -33,8 +33,21 @@ class Kelas extends Model
         );
     }
 
-    public function mataPelajaranKelass()
+    public function waliKelas()
+    {
+        return $this->belongsToMany(User::class, 'anggota_kelas', 'kelas_id', 'user_id')
+            ->where('role', 'guru');
+    }
+
+    public function penugasanMataPelajaran()
     {
         return $this->hasMany(MataPelajaranKelas::class, 'kelas_id');
+    }
+
+    public function bahanAjars()
+    {
+        return BahanAjar::whereHas('mataPelajaranKelas', function ($q) {
+            $q->where('kelas_id', $this->id);
+        });
     }
 }

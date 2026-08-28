@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kelas;
 use App\Models\Log;
 use App\Models\MataPelajaran;
 use App\Models\Sekolah;
@@ -15,6 +16,7 @@ class DashboardController extends Controller
     {
         return match (auth()->user()->role?->value) {
             'admin' => $this->admin(),
+            'sekolah' => $this->sekolah(),
             default => view('dashboard'), // placeholder role lain, dibuat menyusul
         };
     }
@@ -33,5 +35,34 @@ class DashboardController extends Controller
         $logAktivitas = Log::with('user')->latest()->take(4)->get();
 
         return view('admin.dashboard', compact('stats', 'permintaanRegistrasi', 'logAktivitas'));
+    }
+
+    protected function sekolah(): View
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+
+        $stats = [
+            'kelas_aktif' => Kelas::where('sekolah_id', $sekolahId)->where('status', 'aktif')->count(),
+            'guru_terdaftar' => User::where('sekolah_id', $sekolahId)->where('role', 'guru')->count(),
+            'siswa_aktif' => User::where('sekolah_id', $sekolahId)->where('role', 'siswa')->count(),
+            'mata_pelajaran' => MataPelajaran::whereHas('penugasanKelas.kelas', function ($q) use ($sekolahId) {
+                $q->where('sekolah_id', $sekolahId);
+            })->distinct()->count(),
+        ];
+
+        $daftarKelas = Kelas::where('sekolah_id', $sekolahId)
+            ->with('waliKelas')
+            ->withCount('users as jumlah_siswa')
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $logAktivitas = Log::where('sekolah_id', $sekolahId)
+            ->with('user')
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return view('sekolah.dashboard', compact('stats', 'daftarKelas', 'logAktivitas'));
     }
 }

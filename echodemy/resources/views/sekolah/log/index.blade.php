@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <p class="text-xs font-semibold tracking-widest text-hitam2 uppercase mb-1">Log Sistem</p>
-        <h1 class="font-display text-2xl font-semibold">Riwayat Aktivitas Platform</h1>
+        <h1 class="font-display text-2xl font-semibold">Riwayat Aktivitas</h1>
     </x-slot>
 
     <!-- Search + Filter -->
-    <form method="GET" action="{{ route('admin.log.index') }}" id="filter-form" class="flex flex-wrap items-center gap-3 mb-5">
+    <form method="GET" action="{{ route('sekolah.log.index') }}" id="filter-form" class="flex flex-wrap items-center gap-3 mb-5">
         <input type="hidden" name="filter" id="filter-input" value="{{ $filter }}">
 
         <div class="relative flex-1 min-w-[240px]">
@@ -20,10 +20,10 @@
             @php
                 $tabs = [
                     'semua' => 'Semua',
-                    'admin' => 'Admin',
-                    'sekolah' => 'Sekolah',
-                    // 'guru' => 'Guru',
-                    // 'siswa' => 'Siswa',
+                    // 'admin' => 'Admin',
+                    // 'sekolah' => 'Sekolah',
+                    'guru' => 'Guru',
+                    'siswa' => 'Siswa',
                 ];
 
                  $formatCount = fn ($n) => $n > 99 ? '99+' : $n;
@@ -52,13 +52,13 @@
                     @php
                         $role = $log->user?->role?->value;
                         $badgeClass = match ($role) {
-                            'admin' => 'bg-amber/60 text-hitam2',
-                            'sekolah' => 'bg-periwinkle/60 text-hitam2',
+                            'guru' => 'bg-teal/60 text-teal',
+                            'siswa' => 'bg-coral/60 text-coral',
                             default => 'bg-cream2 text-hitam2',
                         };
                         $roleLabel = match ($role) {
-                            'admin' => 'Admin',
-                            'sekolah' => 'Sekolah',
+                            'guru' => 'Guru',
+                            'siswa' => 'Siswa',
                             default => '-',
                         };
                     @endphp

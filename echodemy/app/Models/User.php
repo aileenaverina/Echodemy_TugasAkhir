@@ -69,7 +69,13 @@ class User extends Authenticatable
             'kelas_id'
         );
     }
-    public function mataPelajaranKelass()
+
+    public function kelasSebagaiWali()
+    {
+        return $this->belongsToMany(Kelas::class, 'anggota_kelas', 'user_id', 'kelas_id');
+    }
+
+    public function mataPelajaranKelasDiajar()
     {
         return $this->belongsToMany(
             MataPelajaranKelas::class,

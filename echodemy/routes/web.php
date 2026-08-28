@@ -7,6 +7,10 @@ use App\Http\Controllers\Admin\AdminSekolahController;
 use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Sekolah\SekolahGuruController;
+use App\Http\Controllers\Sekolah\SekolahKelasController;
+use App\Http\Controllers\Sekolah\SekolahLogController;
+use App\Http\Controllers\Sekolah\SekolahSiswaController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,8 +36,6 @@ Route::middleware('auth')->group(function () {
 Route::view('/registration/pending', 'auth.registration-pending')->name('registration.pending');
 Route::get('/wilayah/provinsi', [WilayahController::class, 'provinsi'])->name('wilayah.provinsi');
 Route::get('/wilayah/children/{kode}', [WilayahController::class, 'children'])->name('wilayah.children');
-
-
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Verifikasi sekolah baru daftar (pending)
@@ -61,5 +63,30 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/akun/{akun}', [AdminAkunController::class, 'destroy'])->name('akun.destroy');
 
     Route::get('/log', [AdminLogController::class, 'index'])->name('log.index');
+});
+
+Route::middleware(['auth', 'role:sekolah'])->prefix('sekolah')->name('sekolah.')->group(function () {
+
+    Route::get('/kelas', [SekolahKelasController::class, 'index'])->name('kelas.index');
+    Route::get('/kelas/{kelas}', [SekolahKelasController::class, 'show'])->name('kelas.show');
+    Route::post('/kelas', [SekolahKelasController::class, 'store'])->name('kelas.store');
+    Route::put('/kelas/{kelas}', [SekolahKelasController::class, 'update'])->name('kelas.update');
+    Route::delete('/kelas/{kelas}', [SekolahKelasController::class, 'destroy'])->name('kelas.destroy');
+
+    Route::get('/guru', [SekolahGuruController::class, 'index'])->name('guru.index');
+    Route::get('/guru/{guru}', [SekolahGuruController::class, 'show'])->name('guru.show');
+    Route::post('/guru', [SekolahGuruController::class, 'store'])->name('guru.store');
+    Route::put('/guru/{guru}', [SekolahGuruController::class, 'update'])->name('guru.update');
+    Route::delete('/guru/{guru}', [SekolahGuruController::class, 'destroy'])->name('guru.destroy');
+
+    Route::get('/siswa', [SekolahSiswaController::class, 'index'])->name('siswa.index');
+    Route::get('/siswa/{siswa}', [SekolahSiswaController::class, 'show'])->name('siswa.show');
+    Route::post('/siswa', [SekolahSiswaController::class, 'store'])->name('siswa.store');
+    Route::put('/siswa/{siswa}', [SekolahSiswaController::class, 'update'])->name('siswa.update');
+    Route::delete('/siswa/{siswa}', [SekolahSiswaController::class, 'destroy'])->name('siswa.destroy');
+    Route::get('/siswa/{siswa}/ortu', [SekolahSiswaController::class, 'showOrtu'])->name('siswa.ortu.show');
+    Route::post('/siswa/{siswa}/ortu/reset-password', [SekolahSiswaController::class, 'resetOrtuPassword'])->name('siswa.ortu.reset-password');
+
+    Route::get('/log', [SekolahLogController::class, 'index'])->name('log.index');
 });
 require __DIR__.'/auth.php';

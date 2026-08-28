@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Sekolah;
 
 use App\Http\Controllers\Controller;
 use App\Models\Log;
 use Illuminate\Http\Request;
 
-class AdminLogController extends Controller
+class SekolahLogController extends Controller
 {
     public function index(Request $request)
     {
@@ -16,7 +16,7 @@ class AdminLogController extends Controller
         //$query = Log::with('user')->latest();
         $query = Log::with('user')
             ->whereHas('user', function ($q) {
-                $q->whereIn('role', ['admin', 'sekolah']);
+                $q->whereIn('role', ['guru', 'siswa']);
             })
             ->latest();
 
@@ -38,13 +38,13 @@ class AdminLogController extends Controller
         $logs = $query->paginate(15)->withQueryString();
 
         $counts = [
-            'semua' => Log::whereHas('user', fn($q) => $q->whereIn('role', ['admin', 'sekolah']))->count(),
-            'admin' => Log::whereHas('user', fn($q) => $q->where('role', 'admin'))->count(),
-            'sekolah' => Log::whereHas('user', fn($q) => $q->where('role', 'sekolah'))->count(),
-            // 'guru' => Log::whereHas('user', fn($q) => $q->where('role', 'guru'))->count(),
-            // 'siswa' => Log::whereHas('user', fn($q) => $q->where('role', 'siswa'))->count(),
+             'semua' => Log::whereHas('user', fn($q) => $q->whereIn('role', ['guru', 'siswa']))->count(),
+            // 'admin' => Log::whereHas('user', fn($q) => $q->where('role', 'admin'))->count(),
+            // 'sekolah' => Log::whereHas('user', fn($q) => $q->where('role', 'sekolah'))->count(),
+            'guru' => Log::whereHas('user', fn($q) => $q->where('role', 'guru'))->count(),
+            'siswa' => Log::whereHas('user', fn($q) => $q->where('role', 'siswa'))->count(),
         ];
 
-        return view('admin.log.index', compact('logs', 'counts', 'filter', 'search'));
+        return view('sekolah.log.index', compact('logs', 'counts', 'filter', 'search'));
     }
 }

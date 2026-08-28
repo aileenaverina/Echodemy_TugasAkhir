@@ -74,6 +74,12 @@ class AdminSekolahController extends Controller
 
         $sekolah->update($request->only(['nama', 'npsn', 'nomor_telepon', 'detail_alamat', 'email']));
 
+        Log::create([
+            'deskripsi' => "Mengupdate sekolah {$sekolah->nama}",
+            'user_id' => auth()->id(),
+            'sekolah_id' => $sekolah->id,
+        ]);
+
         return back()->with('success', 'Data sekolah berhasil diperbarui.');
     }
 
