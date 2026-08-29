@@ -58,6 +58,9 @@ class DashboardController extends Controller
             ->get();
 
         $logAktivitas = Log::where('sekolah_id', $sekolahId)
+            ->whereHas('user', function ($q) {
+                $q->whereIn('role', ['guru', 'siswa']);
+            })
             ->with('user')
             ->latest()
             ->take(4)
