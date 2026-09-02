@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Mail\SekolahApprovedMail;
+use App\Mail\SekolahRejectedMail;
 use App\Models\Log;
 use App\Models\Sekolah;
 use App\Models\User;
