@@ -9,6 +9,7 @@ use App\Models\MataPelajaranKelas;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SekolahKelasController extends Controller
 {

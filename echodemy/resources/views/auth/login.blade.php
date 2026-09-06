@@ -17,16 +17,20 @@
 
                     <!-- Email -->
                     <div>
-                        <x-input-label for="email" value="Email" class="text-xs font-semibold tracking-wide uppercase text-hitam2" />
-                        <x-text-input id="email" name="email" type="email" placeholder="nama@sekolah.ac.id"
+                        <x-input-label for="login" value="Email atau Kode User"
+                            class="text-xs font-semibold tracking-wide uppercase text-hitam2" />
+                        <x-text-input id="login" name="login" type="text" placeholder="nama@sekolah.ac.id atau kode user"
                             class="mt-2 block w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"
-                            :value="old('email')" required autofocus autocomplete="username" />
-                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                            :value="old('login')" required autofocus autocomplete="username" />
+                        <x-input-error :messages="$errors->get('login')" class="mt-2" />
                     </div>
+
+
 
                     <!-- Password -->
                     <div>
-                        <x-input-label for="password" value="Password" class="text-xs font-semibold tracking-wide uppercase text-hitam2" />
+                        <x-input-label for="password" value="Password"
+                            class="text-xs font-semibold tracking-wide uppercase text-hitam2" />
                         <x-text-input id="password" name="password" type="password" placeholder="••••••••"
                             class="mt-2 block w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"
                             required autocomplete="current-password" />
@@ -42,7 +46,8 @@
                         </label>
 
                         @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm text-coral font-medium hover:underline">
+                            <a href="{{ route('password.request') }}"
+                                class="text-sm text-coral font-medium hover:underline">
                                 Lupa password?
                             </a>
                         @endif

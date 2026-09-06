@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\AdminMataPelajaranController;
 use App\Http\Controllers\Admin\AdminSekolahController;
 use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Guru\GuruKelasController;
+use App\Http\Controllers\Guru\GuruKelasMataPelajaranController;
+use App\Http\Controllers\Guru\GuruKelasSiswaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Sekolah\SekolahGuruController;
 use App\Http\Controllers\Sekolah\SekolahKelasController;
@@ -88,5 +91,19 @@ Route::middleware(['auth', 'role:sekolah'])->prefix('sekolah')->name('sekolah.')
     Route::post('/siswa/{siswa}/ortu/reset-password', [SekolahSiswaController::class, 'resetOrtuPassword'])->name('siswa.ortu.reset-password');
 
     Route::get('/log', [SekolahLogController::class, 'index'])->name('log.index');
+});
+
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('/kelas', [GuruKelasController::class, 'index'])->name('kelas.index');
+    Route::get('/kelas/{kelas}', [GuruKelasController::class, 'show'])->name('kelas.show');
+
+    Route::get('/kelas/{kelas}/mata-pelajaran', [GuruKelasMataPelajaranController::class, 'index'])->name('kelas.mata-pelajaran.index');
+    Route::post('/kelas/{kelas}/mata-pelajaran', [GuruKelasMataPelajaranController::class, 'store'])->name('kelas.mata-pelajaran.store');
+    Route::put('/kelas/{kelas}/mata-pelajaran/{mataPelajaranKelas}', [GuruKelasMataPelajaranController::class, 'update'])->name('kelas.mata-pelajaran.update');
+    Route::delete('/kelas/{kelas}/mata-pelajaran/{mataPelajaranKelas}', [GuruKelasMataPelajaranController::class, 'destroy'])->name('kelas.mata-pelajaran.destroy');
+
+    Route::get('/kelas/{kelas}/siswa', [GuruKelasSiswaController::class, 'index'])->name('kelas.siswa.index');
+    Route::post('/kelas/{kelas}/siswa', [GuruKelasSiswaController::class, 'store'])->name('kelas.siswa.store');
+    Route::delete('/kelas/{kelas}/siswa/{siswa}', [GuruKelasSiswaController::class, 'destroy'])->name('kelas.siswa.destroy');
 });
 require __DIR__.'/auth.php';
