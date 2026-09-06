@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_tugass', function (Blueprint $table) {
+        Schema::create('detail_latihans', function (Blueprint $table) {
             $table->id();
             $table->integer('nomor')->nullable();
             $table->longText('pertanyaan');
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('jawaban')->nullable();
             $table->boolean('is_random')->nullable();
             $table->double('nilai')->comment('nilai full utk 1 soal`');
-            $table->foreignId('tugas_id')->constrained('tugass')->cascadeOnDelete();
+            $table->foreignId('latihan_id')->constrained('latihans')->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_tugass');
+        Schema::dropIfExists('detail_latihans');
     }
 };

@@ -10,7 +10,7 @@ class Answer extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'submission_id', 'detail_tugas_id', 'jawaban', 'nilai',
+        'submission_id', 'detail_latihan_id', 'jawaban', 'nilai',
     ];
 
     public function submission()
@@ -18,8 +18,8 @@ class Answer extends Model
         return $this->belongsTo(Submission::class);
     }
 
-    public function detailTugas()
+    public function detailLatihan()
     {
-        return $this->belongsTo(DetailTugas::class, 'detail_tugas_id');
+        return $this->belongsTo(DetailLatihan::class, 'detail_latihan_id');
     }
 }

@@ -37,8 +37,13 @@ class BahanAjar extends Model
         return $this->hasMany(Materi::class);
     }
 
-    public function tugass()
+    public function assignments()
     {
-        return $this->hasMany(Tugas::class);
+        return $this->hasMany(Assignment::class);
+    }
+
+    public function latihans()
+    {
+        return $this->hasMany(Latihan::class);
     }
 }

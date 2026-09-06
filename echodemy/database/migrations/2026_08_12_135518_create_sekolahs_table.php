@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('jenjang', ['SD', 'SMP', 'SMA', 'MA', 'MK', 'SMK']);
             $table->string('wilayah_kode')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->tinyInteger('status')->default(0)->comment('0=pending,1=approved,2=rejected');
+            $table->enum('status', ['pending', 'verified', 'rejected'])->default('pending');
             $table->timestamps();
             $table->softDeletes();
 

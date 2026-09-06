@@ -23,6 +23,12 @@ class Kelas extends Model
         return $this->belongsTo(Sekolah::class);
     }
 
+    public function siswa()
+    {
+        return $this->belongsToMany(User::class, 'anggota_kelas', 'kelas_id', 'user_id')
+            ->where('role', 'siswa');
+    }
+
     public function users()
     {
         return $this->belongsToMany(

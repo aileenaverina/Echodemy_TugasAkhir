@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Sekolah extends Model
 {
-    const STATUS_PENDING = 0;
-    const STATUS_VERIFIED = 1;
-    const STATUS_REJECTED = 2;
+    const STATUS_PENDING = 'pending';
+    const STATUS_VERIFIED = 'verified';
+    const STATUS_REJECTED = 'rejected';
     protected $fillable = [
         'nama',
         'npsn',

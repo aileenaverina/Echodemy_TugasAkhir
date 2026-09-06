@@ -60,7 +60,7 @@ class User extends Authenticatable
         return $this->belongsTo(DetailUser::class);
     }
 
-    public function kelass()
+    public function kelas()
     {
         return $this->belongsToMany(
             Kelas::class,
@@ -70,10 +70,6 @@ class User extends Authenticatable
         );
     }
 
-    public function kelasSebagaiWali()
-    {
-        return $this->belongsToMany(Kelas::class, 'anggota_kelas', 'user_id', 'kelas_id');
-    }
 
     public function mataPelajaranKelasDiajar()
     {

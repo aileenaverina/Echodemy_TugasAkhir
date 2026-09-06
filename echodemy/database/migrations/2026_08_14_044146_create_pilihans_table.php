@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nomor_abjad', 45)->nullable();
             $table->string('pilihan_jawaban', 500);
             $table->boolean('is_correct');
-            $table->foreignId('detail_tugas_id')->constrained('detail_tugass')->cascadeOnDelete();
+            $table->foreignId('detail_latihan_id')->constrained('detail_latihans')->cascadeOnDelete();
             $table->timestamps();
         });
     }

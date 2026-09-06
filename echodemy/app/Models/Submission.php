@@ -10,12 +10,12 @@ class Submission extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'tugas_id', 'user_id', 'file', 'nilai', 'status',
+        'latihan_id', 'user_id', 'file', 'nilai', 'status',
     ];
 
-    public function tugas()
+    public function latihan()
     {
-        return $this->belongsTo(Tugas::class, 'tugas_id');
+        return $this->belongsTo(Latihan::class, 'latihan_id');
     }
 
     public function siswa()

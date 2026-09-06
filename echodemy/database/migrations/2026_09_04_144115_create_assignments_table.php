@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('materis', function (Blueprint $table) {
+        Schema::create('assignments', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->enum('tipe', ['teks', 'url', 'file']);
-            $table->string('url', 500)->nullable();
-            $table->longText('konten')->nullable();
+            $table->string('judul');
             $table->string('file')->nullable();
-            $table->boolean('is_lock')->default(false);
-            $table->foreignId('bahan_ajar_id')->constrained('bahan_ajars');
+            $table->double('nilai');
+            $table->foreignId('bahan_ajar_id')->constrained('bahan_ajars')->cascadeOnDelete();
+            $table->timestamp('batas_waktu');
+            $table->boolean('is_lock');
+            $table->integer('persen_nilai_akhir');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('materis');
+        Schema::dropIfExists('assignments');
     }
 };

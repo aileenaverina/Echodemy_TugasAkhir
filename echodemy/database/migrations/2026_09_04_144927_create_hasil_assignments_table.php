@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('submissions', function (Blueprint $table) {
+        Schema::create('hasil_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('latihan_id')->constrained('latihans')->cascadeOnDelete();
+            $table->string('file')->nullable();
+            $table->longText('text')->nullable();
+            $table->foreignId('assignment_id')->constrained('assignments')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('status', ['belum dikerjakan', 'draft', 'telat', 'dikumpulkan', 'dinilai']);
+            $table->enum('status', ['belum dikerjakan', 'telat', 'dikumpulkan', 'dinilai']);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('submissions');
+        Schema::dropIfExists('hasil_assignments');
     }
 };

@@ -14,7 +14,7 @@ return new class extends Migration
          Schema::create('answers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('submission_id')->constrained('submissions')->cascadeOnDelete();
-            $table->foreignId('detail_tugas_id')->constrained('detail_tugass')->cascadeOnDelete();
+            $table->foreignId('detail_latihan_id')->constrained('detail_latihans')->cascadeOnDelete();
             $table->text('jawaban');
             $table->double('nilai')->nullable();
             $table->timestamps();
