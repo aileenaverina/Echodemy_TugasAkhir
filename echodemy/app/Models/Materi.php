@@ -12,7 +12,7 @@ class Materi extends Model
     protected $table = 'materis';
 
     protected $fillable = [
-        'nama', 'tipe', 'konten', 'file', 'is_lock', 'bahan_ajar_id',
+        'nama', 'tipe', 'url', 'konten', 'file', 'is_lock', 'bahan_ajar_id',
     ];
 
     protected $casts = [

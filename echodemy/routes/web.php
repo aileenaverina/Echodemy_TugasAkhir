@@ -6,9 +6,15 @@ use App\Http\Controllers\Admin\AdminMataPelajaranController;
 use App\Http\Controllers\Admin\AdminSekolahController;
 use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Guru\GuruAssignmentController;
 use App\Http\Controllers\Guru\GuruKelasController;
 use App\Http\Controllers\Guru\GuruKelasMataPelajaranController;
 use App\Http\Controllers\Guru\GuruKelasSiswaController;
+use App\Http\Controllers\Guru\GuruKoreksiController;
+use App\Http\Controllers\Guru\GuruLatihanController;
+use App\Http\Controllers\Guru\GuruMataPelajaranKelasController;
+use App\Http\Controllers\Guru\GuruSectionController;
+use App\Http\Controllers\Guru\GuruShareBahanAjarController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Sekolah\SekolahGuruController;
 use App\Http\Controllers\Sekolah\SekolahKelasController;
@@ -105,5 +111,29 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::get('/kelas/{kelas}/siswa', [GuruKelasSiswaController::class, 'index'])->name('kelas.siswa.index');
     Route::post('/kelas/{kelas}/siswa', [GuruKelasSiswaController::class, 'store'])->name('kelas.siswa.store');
     Route::delete('/kelas/{kelas}/siswa/{siswa}', [GuruKelasSiswaController::class, 'destroy'])->name('kelas.siswa.destroy');
+
+    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}', [GuruMataPelajaranKelasController::class, 'show'])->name('mata-pelajaran-kelas.show');
+    Route::post('/mata-pelajaran-kelas/{mataPelajaranKelas}/section', [GuruMataPelajaranKelasController::class, 'storeSection'])->name('mata-pelajaran-kelas.section.store');
+    Route::put('/mata-pelajaran-kelas/{mataPelajaranKelas}/section/{bahanAjar}', [GuruMataPelajaranKelasController::class, 'updateSection'])->name('mata-pelajaran-kelas.section.update');
+    Route::delete('/mata-pelajaran-kelas/{mataPelajaranKelas}/section/{bahanAjar}', [GuruMataPelajaranKelasController::class, 'destroySection'])->name('mata-pelajaran-kelas.section.destroy');
+    Route::post('/mata-pelajaran-kelas/{mataPelajaranKelas}/guru', [GuruMataPelajaranKelasController::class, 'addGuru'])->name('mata-pelajaran-kelas.guru.store');
+    Route::post('/section/{bahanAjar}/toggle-lock', [GuruMataPelajaranKelasController::class, 'toggleLockSection'])->name('section.toggle-lock');
+
+    Route::get('/share-targets', [GuruShareBahanAjarController::class, 'targets'])->name('share.targets');
+    Route::post('/section/{bahanAjar}/share', [GuruShareBahanAjarController::class, 'shareSection'])->name('section.share');
+
+    Route::get('/section/{bahanAjar}/create', [GuruSectionController::class, 'create'])->name('section.create');
+    Route::post('/section/{bahanAjar}/materi', [GuruSectionController::class, 'storeMateri'])->name('section.materi.store');
+    Route::post('/section/{bahanAjar}/assignment', [GuruSectionController::class, 'storeAssignment'])->name('section.assignment.store');
+    Route::post('/section/{bahanAjar}/latihan', [GuruSectionController::class, 'storeLatihan'])->name('section.latihan.store');
+
+    Route::get('/latihan/{latihan}', [GuruLatihanController::class, 'show'])->name('latihan.show');
+    Route::get('/latihan/{latihan}/soal', [GuruLatihanController::class, 'soal'])->name('latihan.soal');
+    Route::put('/latihan/{latihan}/submission/{submission}', [GuruLatihanController::class, 'updateNilai'])->name('latihan.submission.update');
+
+    Route::get('/assignment/{assignment}', [GuruAssignmentController::class, 'show'])->name('assignment.show');
+    
+    Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('guru.koreksi.show');
+Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('guru.koreksi.update');
 });
 require __DIR__.'/auth.php';

@@ -17,6 +17,7 @@ class DetailLatihan extends Model
 
     protected $casts = [
         'is_random' => 'boolean',
+        'jawaban' => 'array',
     ];
 
     public function latihan()

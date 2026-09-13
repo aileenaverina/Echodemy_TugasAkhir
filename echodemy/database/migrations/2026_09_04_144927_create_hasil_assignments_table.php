@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('assignment_id')->constrained('assignments')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->enum('status', ['belum dikerjakan', 'telat', 'dikumpulkan', 'dinilai']);
+            $table->double('nilai')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

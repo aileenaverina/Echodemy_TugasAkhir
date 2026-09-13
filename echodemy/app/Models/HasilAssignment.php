@@ -9,7 +9,7 @@ class HasilAssignment extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['file', 'text', 'assignment_id', 'user_id', 'status'];
+    protected $fillable = ['file', 'text', 'assignment_id', 'user_id', 'status', 'nilai'];
 
     public function assignment()
     {
