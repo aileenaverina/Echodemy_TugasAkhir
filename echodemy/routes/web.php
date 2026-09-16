@@ -12,7 +12,9 @@ use App\Http\Controllers\Guru\GuruKelasMataPelajaranController;
 use App\Http\Controllers\Guru\GuruKelasSiswaController;
 use App\Http\Controllers\Guru\GuruKoreksiController;
 use App\Http\Controllers\Guru\GuruLatihanController;
+use App\Http\Controllers\Guru\GuruLogController;
 use App\Http\Controllers\Guru\GuruMataPelajaranKelasController;
+use App\Http\Controllers\Guru\GuruRaporController;
 use App\Http\Controllers\Guru\GuruSectionController;
 use App\Http\Controllers\Guru\GuruShareBahanAjarController;
 use App\Http\Controllers\ProfileController;
@@ -24,7 +26,7 @@ use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-     return redirect()->route('login');
+    return redirect()->route('login');
 });
 
 //?
@@ -52,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/sekolah-verification/{sekolah}/approve', [SekolahVerificationController::class, 'approve'])->name('sekolah-verification.approve');
     Route::post('/sekolah-verification/{sekolah}/reject', [SekolahVerificationController::class, 'reject'])->name('sekolah-verification.reject');
 
-     // Manajemen sekolah (semua status)
+    // Manajemen sekolah (semua status)
     Route::get('/sekolah', [AdminSekolahController::class, 'index'])->name('sekolah.index');
     Route::get('/sekolah/{sekolah}', [AdminSekolahController::class, 'show'])->name('sekolah.show');
     Route::put('/sekolah/{sekolah}', [AdminSekolahController::class, 'update'])->name('sekolah.update');
@@ -117,6 +119,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::put('/mata-pelajaran-kelas/{mataPelajaranKelas}/section/{bahanAjar}', [GuruMataPelajaranKelasController::class, 'updateSection'])->name('mata-pelajaran-kelas.section.update');
     Route::delete('/mata-pelajaran-kelas/{mataPelajaranKelas}/section/{bahanAjar}', [GuruMataPelajaranKelasController::class, 'destroySection'])->name('mata-pelajaran-kelas.section.destroy');
     Route::post('/mata-pelajaran-kelas/{mataPelajaranKelas}/guru', [GuruMataPelajaranKelasController::class, 'addGuru'])->name('mata-pelajaran-kelas.guru.store');
+    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}/rekap-nilai', [GuruMataPelajaranKelasController::class, 'rekapNilai'])->name('mata-pelajaran-kelas.rekap');
+    Route::delete('/mata-pelajaran-kelas/{mataPelajaranKelas}/guru/{guru}', [GuruMataPelajaranKelasController::class, 'removeGuru'])->name('mata-pelajaran-kelas.guru.destroy');
     Route::post('/section/{bahanAjar}/toggle-lock', [GuruMataPelajaranKelasController::class, 'toggleLockSection'])->name('section.toggle-lock');
 
     Route::get('/share-targets', [GuruShareBahanAjarController::class, 'targets'])->name('share.targets');
@@ -130,10 +134,15 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::get('/latihan/{latihan}', [GuruLatihanController::class, 'show'])->name('latihan.show');
     Route::get('/latihan/{latihan}/soal', [GuruLatihanController::class, 'soal'])->name('latihan.soal');
     Route::put('/latihan/{latihan}/submission/{submission}', [GuruLatihanController::class, 'updateNilai'])->name('latihan.submission.update');
+    Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('guru.koreksi.update');
+    Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('guru.koreksi.show');
 
     Route::get('/assignment/{assignment}', [GuruAssignmentController::class, 'show'])->name('assignment.show');
-    
-    Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('guru.koreksi.show');
-Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('guru.koreksi.update');
+
+    Route::get('/rapor', [GuruRaporController::class, 'index'])->name('rapor.index');
+    Route::get('/rapor/kelas/{kelas}', [GuruRaporController::class, 'kelas'])->name('rapor.kelas');
+    Route::get('/rapor/kelas/{kelas}/siswa/{siswa}', [GuruRaporController::class, 'siswa'])->name('rapor.siswa');
+
+    Route::get('/log', [GuruLogController::class, 'index'])->name('log.index');
 });
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

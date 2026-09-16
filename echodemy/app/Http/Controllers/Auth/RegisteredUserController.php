@@ -68,8 +68,7 @@ class RegisteredUserController extends Controller
             'logo' => $logoPath,
             'singkatan' => strtoupper($request->singkatan),
             'jenjang' => $request->jenjang,
-            'wilayah_kode' => $request->wilayah_kode,
-            'is_active' => true,
+            'wilayah_kode' => $request->wilayah_kode, 
             'status' => Sekolah::STATUS_PENDING,
         ]);
 
