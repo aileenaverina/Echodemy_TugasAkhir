@@ -22,6 +22,9 @@ use App\Http\Controllers\Sekolah\SekolahGuruController;
 use App\Http\Controllers\Sekolah\SekolahKelasController;
 use App\Http\Controllers\Sekolah\SekolahLogController;
 use App\Http\Controllers\Sekolah\SekolahSiswaController;
+use App\Http\Controllers\Siswa\SiswaLatihanController;
+use App\Http\Controllers\Siswa\SiswaMataPelajaranController;
+use App\Http\Controllers\Siswa\SiswaMateriController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
@@ -144,5 +147,18 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::get('/rapor/kelas/{kelas}/siswa/{siswa}', [GuruRaporController::class, 'siswa'])->name('rapor.siswa');
 
     Route::get('/log', [GuruLogController::class, 'index'])->name('log.index');
+});
+
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}', [SiswaMataPelajaranController::class, 'show'])->name('mata-pelajaran-kelas.show');
+    Route::post('/materi/{materi}/toggle-progress', [SiswaMataPelajaranController::class, 'toggleProgress'])->name('materi.toggle-progress');
+    Route::get('/materi/{materi}', [SiswaMateriController::class, 'show'])->name('materi.show');
+
+    Route::get('/latihan/{latihan}', [SiswaLatihanController::class, 'show'])->name('latihan.show');
+    Route::post('/latihan/{latihan}/mulai', [SiswaLatihanController::class, 'mulai'])->name('latihan.mulai');
+    Route::get('/latihan/{latihan}/kerjakan/{submission}', [SiswaLatihanController::class, 'kerjakan'])->name('latihan.kerjakan');
+    Route::post('/latihan/{latihan}/kerjakan/{submission}/jawab', [SiswaLatihanController::class, 'jawab'])->name('latihan.jawab');
+    Route::post('/latihan/{latihan}/kerjakan/{submission}/selesai', [SiswaLatihanController::class, 'selesai'])->name('latihan.selesai');
+    Route::get('/latihan/{latihan}/hasil/{submission}', [SiswaLatihanController::class, 'hasil'])->name('latihan.hasil');
 });
 require __DIR__ . '/auth.php';

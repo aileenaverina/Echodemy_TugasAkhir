@@ -12,7 +12,13 @@ class Materi extends Model
     protected $table = 'materis';
 
     protected $fillable = [
-        'nama', 'tipe', 'url', 'konten', 'file', 'is_lock', 'bahan_ajar_id',
+        'nama',
+        'tipe',
+        'url',
+        'konten',
+        'file',
+        'is_lock',
+        'bahan_ajar_id',
     ];
 
     protected $casts = [
@@ -24,9 +30,9 @@ class Materi extends Model
         return $this->belongsTo(BahanAjar::class);
     }
 
-    public function siswaProgress()
+    public function progresSiswa()
     {
-        return $this->belongsToMany(User::class, 'progres_materi')
+        return $this->belongsToMany(User::class, 'progres_materis', 'materi_id', 'user_id')
             ->withPivot('is_done');
     }
 }

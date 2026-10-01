@@ -30,7 +30,7 @@ class GuruSectionController extends Controller
             'tipe' => ['required', 'in:teks,url,file'],
             'konten' => ['required_if:tipe,teks', 'nullable', 'string'],
             'url' => ['required_if:tipe,url', 'nullable', 'url', 'max:500'],
-            'file' => ['required_if:tipe,file', 'nullable', 'file', 'max:20480'],
+            'file' => ['required_if:tipe,file', 'nullable', 'file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:20480'],
         ]);
 
         $filePath = $request->hasFile('file') ? $request->file('file')->store('materi-files', 'public') : null;
@@ -113,7 +113,7 @@ class GuruSectionController extends Controller
                 $detail = DetailLatihan::create([
                     'nomor' => $index + 1,
                     'pertanyaan' => $soal['pertanyaan'],
-                    'tipe_soal' => $soal['tipe_soal'] === 'esai' ? 'esai' : ($soal['tipe_soal'] === 'isian' ? 'esai' : 'pilihan_ganda'),
+                    'tipe_soal' => $soal['tipe_soal'],
                     // catatan: kolom DB cuma enum('pilihan_ganda','esai') — 'isian' dibedakan lewat kolom jawaban terisi
                     'jawaban' => $soal['tipe_soal'] === 'isian' ? ($soal['jawaban'] ?? null) : null,
                     'is_random' => $request->boolean("soal.$index.is_random"),

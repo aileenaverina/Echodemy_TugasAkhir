@@ -140,8 +140,12 @@
                 </div>
                 <div id="materi-field-file" class="hidden">
                     <label class="text-xs font-semibold uppercase text-hitam2">File</label>
-                    <input type="file" name="file"
+                    <input type="file" name="file" id="materi-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx"
                         class="mt-2 w-full text-sm text-hitam2 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-cream2 file:text-ink file:text-sm">
+                    <p id="materi-file-warning" class="hidden text-xs text-amber mt-2">
+                        File Word/PowerPoint tidak mendukung fitur Dengarkan (Text-to-Speech). Hanya file PDF yang dapat
+                        dibacakan otomatis.
+                    </p>
                 </div>
 
                 <button type="submit"
@@ -358,9 +362,16 @@
                 $('#materi-field-' + $(this).val()).removeClass('hidden');
             });
 
+            
+            $('#materi-file-input').on('change', function() {
+                const fileName = this.files[0]?.name.toLowerCase() || '';
+                const isPdf = fileName.endsWith('.pdf');
+                $('#materi-file-warning').toggleClass('hidden', isPdf || !fileName);
+            });
+            
             // Latihan: dynamic soal
             let soalCounter = 0;
-
+            
             function reindexAll() {
                 $('#soal-list .soal-item').each(function(soalIdx) {
                     const $soal = $(this);
@@ -414,7 +425,7 @@
                     const pilihanIdx = $pilihan.index();
                     $soal.append(
                         `<input type="hidden" name="soal[${soalIdx}][jawaban_benar]" value="${pilihanIdx}">`
-                        );
+                    );
                 });
             }
 

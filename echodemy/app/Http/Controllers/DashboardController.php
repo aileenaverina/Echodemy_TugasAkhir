@@ -17,6 +17,8 @@ class DashboardController extends Controller
         return match (auth()->user()->role?->value) {
             'admin' => $this->admin(),
             'sekolah' => $this->sekolah(),
+            'guru' => redirect()->route('guru.kelas.index'),
+            'siswa' => $this->siswa(),
             default => view('dashboard'), // placeholder role lain, dibuat menyusul
         };
     }
@@ -67,5 +69,41 @@ class DashboardController extends Controller
             ->get();
 
         return view('sekolah.dashboard', compact('stats', 'daftarKelas', 'logAktivitas'));
+    }
+
+    protected function siswa(): View
+    {
+        $siswa = auth()->user();
+        $kelas = $siswa->kelas()->where('status', 'aktif')->first();
+
+        $mataPelajaranKelasList = collect();
+        $jumlahSiswaKelas = 0;
+        $waliKelas = null;
+
+        if ($kelas) {
+            $jumlahSiswaKelas = $kelas->siswa()->count();
+            $waliKelas = $kelas->waliKelas->first();
+
+            $mataPelajaranKelasList = $kelas->penugasanMataPelajaran()
+                ->with(['mataPelajaran', 'bahanAjars.materis'])
+                ->get()
+                ->map(function ($mpk) use ($siswa) {
+                    $totalMateri = $mpk->bahanAjars->flatMap->materis->count();
+                    $materiSelesai = $mpk->bahanAjars->flatMap->materis
+                        ->filter(function ($materi) use ($siswa) {
+                            return $materi->progresSiswa()->where('user_id', $siswa->id)->where('is_done', true)->exists();
+                        })
+                        ->count();
+
+                    return (object) [
+                        'mata_pelajaran' => $mpk->mataPelajaran,
+                        'total_materi' => $totalMateri,
+                        'materi_selesai' => $materiSelesai,
+                        'persen' => $totalMateri > 0 ? round(($materiSelesai / $totalMateri) * 100) : 0,
+                    ];
+                });
+        }
+
+        return view('siswa.dashboard', compact('kelas', 'jumlahSiswaKelas', 'waliKelas', 'mataPelajaranKelasList'));
     }
 }
