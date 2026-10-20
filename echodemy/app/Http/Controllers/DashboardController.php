@@ -19,7 +19,8 @@ class DashboardController extends Controller
             'sekolah' => $this->sekolah(),
             'guru' => redirect()->route('guru.kelas.index'),
             'siswa' => $this->siswa(),
-            default => view('dashboard'), // placeholder role lain, dibuat menyusul
+            'orang_tua' => redirect()->route('ortu.nilai.index'),
+            default => view('dashboard'),
         };
     }
 

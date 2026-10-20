@@ -10,7 +10,7 @@ class Assignment extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'judul', 'file', 'nilai', 'bahan_ajar_id', 'batas_waktu', 'is_lock', 'persen_nilai_akhir',
+        'judul', 'tipe_pengumpulan', 'file', 'nilai', 'bahan_ajar_id', 'batas_waktu', 'is_lock', 'persen_nilai_akhir',
     ];
 
     protected $casts = [

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" >
+<html lang="id">
 
 <head>
     <meta charset="utf-8">
@@ -26,35 +26,39 @@
     <div class=" lg:flex items-start">
         <div id="sidebar-overlay" class="hidden fixed inset-0 bg-ink/30 z-30 lg:hidden"></div>
 
-        <aside id="sidebar"
-            class="fixed z-40 inset-y-0 left-0 w-64 bg-putih border-r border-border px-4 py-6 -translate-x-full transition-transform duration-200 overflow-y-auto lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-56 lg:shrink-0">
-            @switch(auth()->user()->role?->value)
-                @case('sekolah')
-                    <x-sidebar-sekolah />
-                @break
+        @unless (auth()->user()->role?->value === 'orang_tua')
+            <aside id="sidebar"
+                class="fixed z-40 inset-y-0 left-0 w-64 bg-putih border-r border-border px-4 py-6 -translate-x-full transition-transform duration-200 overflow-y-auto lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-56 lg:shrink-0">
+                @switch(auth()->user()->role?->value)
+                    @case('sekolah')
+                        <x-sidebar-sekolah />
+                    @break
 
-                @case('admin')
-                    <x-sidebar-admin />
-                @break
+                    @case('admin')
+                        <x-sidebar-admin />
+                    @break
 
-                @case('guru')
-                    <x-sidebar-guru />
-                @break
+                    @case('guru')
+                        <x-sidebar-guru />
+                    @break
 
-                @case('siswa')
-                    <x-sidebar-siswa />
-                @break
-            @endswitch
-        </aside>
+                    @case('siswa')
+                        <x-sidebar-siswa />
+                    @break
+                @endswitch
+            </aside>
+        @endunless
 
         <div class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6">
-            <button id="sidebar-open-btn"
-                class="lg:hidden mb-4 flex items-center gap-2 text-sm font-medium text-hitam2">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                Menu
-            </button>
+            @unless (auth()->user()->role?->value === 'orang_tua')
+                <button id="sidebar-open-btn"
+                    class="lg:hidden mb-4 flex items-center gap-2 text-sm font-medium text-hitam2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    Menu
+                </button>
+            @endunless
 
             @isset($header)
                 <div class="mb-6">{{ $header }}</div>

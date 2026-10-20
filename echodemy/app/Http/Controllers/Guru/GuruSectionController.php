@@ -21,6 +21,34 @@ class GuruSectionController extends Controller
         return view('guru.section.create', compact('bahanAjar'));
     }
 
+    protected function notifySiswa(BahanAjar $bahanAjar, string $nama, ?\Carbon\Carbon $batasWaktu = null): void
+    {
+        $kelas = $bahanAjar->mataPelajaranKelas->kelas;
+        $mataPelajaran = $bahanAjar->mataPelajaranKelas->mataPelajaran;
+
+        $deskripsi = "Mata Pelajaran {$mataPelajaran->nama}";
+
+        if ($batasWaktu) {
+            $hari = (int) now()->diffInDays($batasWaktu, false);
+            $deskripsi .= $hari > 0 ? ", Deadline {$hari} hari lagi" : ", Deadline hari ini";
+        }
+
+        $siswaIds = $kelas->siswa()->pluck('users.id');
+
+        $rows = $siswaIds->map(fn($id) => [
+            'judul' => strtoupper($nama) . ' DI UPLOAD',
+            'deskripsi' => $deskripsi,
+            'is_read' => false,
+            'user_id' => $id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->toArray();
+
+        if ($rows) {
+            \App\Models\Notif::insert($rows);
+        }
+    }
+
     public function storeMateri(Request $request, BahanAjar $bahanAjar): RedirectResponse
     {
         $this->authorizeSection($bahanAjar);
@@ -45,6 +73,8 @@ class GuruSectionController extends Controller
             'bahan_ajar_id' => $bahanAjar->id,
         ]);
 
+        $this->notifySiswa($bahanAjar, $validated['nama']);
+
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Materi berhasil ditambahkan.');
     }
@@ -55,6 +85,7 @@ class GuruSectionController extends Controller
 
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
+            'tipe_pengumpulan' => ['required', 'in:file,text,keduanya'],
             'file' => ['nullable', 'file', 'max:20480'],
             'batas_waktu' => ['nullable', 'date'],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -64,11 +95,14 @@ class GuruSectionController extends Controller
 
         $bahanAjar->assignments()->create([
             'judul' => $validated['judul'],
+            'tipe_pengumpulan' => $validated['tipe_pengumpulan'],
             'file' => $filePath,
             'batas_waktu' => $validated['batas_waktu'] ?? null,
             'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? null,
             'is_lock' => false,
         ]);
+
+        $this->notifySiswa($bahanAjar, $validated['judul'], $validated['batas_waktu'] ? \Carbon\Carbon::parse($validated['batas_waktu']) : null);
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Tugas berhasil ditambahkan.');
@@ -134,6 +168,8 @@ class GuruSectionController extends Controller
                 }
             }
         });
+
+        $this->notifySiswa($bahanAjar, $validated['judul'], $validated['batas_waktu'] ? \Carbon\Carbon::parse($validated['batas_waktu']) : null);
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Latihan berhasil ditambahkan.');

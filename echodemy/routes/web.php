@@ -17,14 +17,18 @@ use App\Http\Controllers\Guru\GuruMataPelajaranKelasController;
 use App\Http\Controllers\Guru\GuruRaporController;
 use App\Http\Controllers\Guru\GuruSectionController;
 use App\Http\Controllers\Guru\GuruShareBahanAjarController;
+use App\Http\Controllers\Ortu\OrtuNilaiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Sekolah\SekolahGuruController;
 use App\Http\Controllers\Sekolah\SekolahKelasController;
 use App\Http\Controllers\Sekolah\SekolahLogController;
 use App\Http\Controllers\Sekolah\SekolahSiswaController;
+use App\Http\Controllers\Siswa\SiswaAssignmentController;
 use App\Http\Controllers\Siswa\SiswaLatihanController;
 use App\Http\Controllers\Siswa\SiswaMataPelajaranController;
 use App\Http\Controllers\Siswa\SiswaMateriController;
+use App\Http\Controllers\Siswa\SiswaNilaiController;
+use App\Http\Controllers\Siswa\SiswaNotifikasiController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
@@ -160,5 +164,18 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     Route::post('/latihan/{latihan}/kerjakan/{submission}/jawab', [SiswaLatihanController::class, 'jawab'])->name('latihan.jawab');
     Route::post('/latihan/{latihan}/kerjakan/{submission}/selesai', [SiswaLatihanController::class, 'selesai'])->name('latihan.selesai');
     Route::get('/latihan/{latihan}/hasil/{submission}', [SiswaLatihanController::class, 'hasil'])->name('latihan.hasil');
+
+    Route::get('/assignment/{assignment}', [SiswaAssignmentController::class, 'show'])->name('assignment.show');
+    Route::post('/assignment/{assignment}/kumpul', [SiswaAssignmentController::class, 'kumpul'])->name('assignment.kumpul');
+
+    Route::get('/nilai', [SiswaNilaiController::class, 'index'])->name('nilai.index');
+
+    Route::get('/notifikasi', [SiswaNotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::post('/notifikasi/{notif}/toggle', [SiswaNotifikasiController::class, 'toggle'])->name('notifikasi.toggle');
+});
+
+Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {
+    Route::get('/nilai', [OrtuNilaiController::class, 'index'])->name('nilai.index');
+    Route::get('/nilai/{mataPelajaranKelas}', [OrtuNilaiController::class, 'show'])->name('nilai.show');
 });
 require __DIR__ . '/auth.php';

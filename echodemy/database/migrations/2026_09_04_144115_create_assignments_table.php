@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
             $table->string('judul');
+            $table->enum('tipe_pengumpulan', ['file', 'text', 'keduanya'])->default('keduanya');
             $table->string('file')->nullable();
             $table->double('nilai');
             $table->foreignId('bahan_ajar_id')->constrained('bahan_ajars')->cascadeOnDelete();

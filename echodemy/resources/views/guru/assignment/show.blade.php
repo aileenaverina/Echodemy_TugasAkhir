@@ -29,6 +29,7 @@
                 <tr class="border-b border-border text-left text-[11px] tracking-widest uppercase text-hitam2">
                     <th class="px-5 py-3 font-semibold">Nama</th>
                     <th class="px-5 py-3 font-semibold">Pengumpulan</th>
+                    <th class="px-5 py-3 font-semibold">Jawaban</th>
                     <th class="px-5 py-3 font-semibold">Status</th>
                     <th class="px-5 py-3 font-semibold">Nilai</th>
                     <th class="px-5 py-3 font-semibold">Aksi</th>
@@ -39,6 +40,18 @@
                     <tr class="border-b border-border last:border-0">
                         <td class="px-5 py-4 font-medium">{{ $hasil->siswa->nama_lengkap }}</td>
                         <td class="px-5 py-4 text-hitam2">{{ $hasil->created_at->format('d/m/y H.i.s') }}</td>
+                        <td class="px-5 py-4">
+                            @if ($hasil->file)
+                                <a href="{{ \Storage::url($hasil->file) }}" target="_blank"
+                                    class="text-coral hover:underline text-xs">Lihat File</a>
+                            @endif
+                            @if ($hasil->text)
+                                <p class="text-xs text-hitam2 mt-1 line-clamp-2 max-w-xs">{{ $hasil->text }}</p>
+                            @endif
+                            @if (!$hasil->file && !$hasil->text)
+                                <span class="text-xs text-hitam2">-</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-4">
                             <span
                                 class="inline-block px-3 py-1 rounded-full text-xs font-medium {{ $hasil->status === 'dinilai' ? 'bg-teal/60 text-hitam' : 'bg-amber/60 text-hitam' }}">
@@ -115,7 +128,8 @@
             $('.mark-nilai-btn').on('click', function() {
                 $('#nilai-input').val($(this).data('nilai'));
                 $('#nilai-form').attr('action',
-                    '{{ url('/guru/assignment/' . $assignment->id . '/hasil') }}/' + $(this).data('id'));
+                    '{{ url('/guru/assignment/' . $assignment->id . '/hasil') }}/' + $(this).data('id')
+                    );
                 $('#nilai-modal').removeClass('hidden');
             });
 

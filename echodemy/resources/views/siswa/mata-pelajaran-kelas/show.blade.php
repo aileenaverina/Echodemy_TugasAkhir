@@ -82,7 +82,8 @@
                             </p>
                             <div class="space-y-2">
                                 @foreach ($bahanAjar->assignments as $assignment)
-                                    <div class="px-4 py-2.5 rounded-lg border border-border">
+                                    <a href="{{ route('siswa.assignment.show', $assignment) }}"
+                                        class="block px-4 py-2.5 rounded-lg border border-border hover:bg-cream2 transition"></a>
                                         <div class="flex items-center gap-2">
                                             <svg class="w-4 h-4 text-hitam2" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor" stroke-width="2">
@@ -95,7 +96,7 @@
                                             <p class="text-xs text-hitam2 mt-1 ml-6">Batas:
                                                 {{ $assignment->batas_waktu->format('d M Y H:i') }}</p>
                                         @endif
-                                    </div>
+                                    </a>
                                 @endforeach
 
                                 @foreach ($bahanAjar->latihans as $latihan)
