@@ -10,7 +10,7 @@ class Submission extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'latihan_id', 'user_id', 'file', 'nilai', 'status',
+        'latihan_id', 'user_id', 'file', 'nilai', 'status', 'nilai_akhir',
     ];
 
     public function latihan()

@@ -11,6 +11,7 @@ class Assignment extends Model
 
     protected $fillable = [
         'judul', 'tipe_pengumpulan', 'file', 'nilai', 'bahan_ajar_id', 'batas_waktu', 'is_lock', 'persen_nilai_akhir',
+        'kategori',
     ];
 
     protected $casts = [

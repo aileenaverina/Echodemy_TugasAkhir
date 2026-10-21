@@ -16,6 +16,7 @@ class BahanAjar extends Model
         'mata_pelajaran_id',
         'notes',
         'is_lock',
+        'semester',
     ];
 
     protected $casts = [

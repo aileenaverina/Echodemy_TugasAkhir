@@ -13,7 +13,7 @@ class Latihan extends Model
 
     protected $fillable = [
         'judul', 'is_random', 'bahan_ajar_id',
-        'batas_waktu', 'maksimal_percobaan', 'is_lock', 'persen_nilai_akhir', 'waktu_kerja',
+        'batas_waktu', 'maksimal_percobaan', 'is_lock', 'persen_nilai_akhir', 'waktu_kerja', 'kategori', 'penilaian_percobaan',
     ];
 
     protected $casts = [

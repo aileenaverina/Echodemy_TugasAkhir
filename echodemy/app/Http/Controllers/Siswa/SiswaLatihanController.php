@@ -166,9 +166,10 @@ class SiswaLatihanController extends Controller
     protected function finalisasi(Latihan $latihan, Submission $submission, bool $telat)
     {
         $deadline = $submission->created_at->addMinutes($latihan->waktu_kerja);
+        $adaEsai = $latihan->detailLatihans()->where('tipe_soal', 'esai')->exists();
         $status = $telat || now()->greaterThan($deadline) ? 'telat' : 'dikumpulkan';
 
-        $submission->update(['status' => $status]);
+        $submission->update(['status' => $adaEsai ? $status : 'dinilai']);
 
         return redirect()->route('siswa.latihan.show', $latihan)
             ->with($telat ? 'error' : 'success', $telat ? 'Waktu habis, jawaban otomatis dikumpulkan.' : 'Latihan berhasil dikumpulkan.');

@@ -7,11 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pilihan extends Model
 {
     protected $fillable = [
-        'nomor_abjad', 'pilihan_jawaban', 'is_correct', 'detail_latihan_id',
-    ];
-
-    protected $casts = [
-        'is_correct' => 'boolean',
+        'nomor_abjad', 'pilihan_jawaban', 'persentase_correct', 'detail_latihan_id',
     ];
 
     public function detailLatihan()
