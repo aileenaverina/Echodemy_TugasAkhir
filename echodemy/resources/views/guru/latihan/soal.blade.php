@@ -16,12 +16,14 @@
                 @if ($detail->tipe_soal === 'pilihan_ganda')
                     <div class="space-y-2">
                         @foreach ($detail->pilihans as $pilihan)
+                            @php $p = $pilihan->persentase_correct; @endphp
                             <div
-                                class="flex items-center gap-2 text-sm px-3 py-2 rounded-lg {{ $pilihan->is_correct ? 'bg-teal/20 text-hitam font-medium' : 'bg-cream2 text-hitam2' }}">
+                                class="flex items-center gap-2 text-sm px-3 py-2 rounded-lg {{ $p > 0 ? 'bg-teal/20 text-hitam font-medium' : ($p < 0 ? 'bg-coral/10 text-hitam' : 'bg-cream2 text-hitam2') }}">
                                 <span class="font-semibold">{{ $pilihan->nomor_abjad }}.</span>
                                 {{ $pilihan->pilihan_jawaban }}
-                                @if ($pilihan->is_correct)
-                                    <span class="text-xs text-teal ml-auto">Benar</span>
+                                @if ($p != 0)
+                                    <span
+                                        class="text-xs ml-auto {{ $p > 0 ? 'text-teal' : 'text-coral' }}">{{ $p > 0 ? '+' : '' }}{{ $p }}%</span>
                                 @endif
                             </div>
                         @endforeach

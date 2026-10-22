@@ -18,7 +18,7 @@
 
                 <div class="bg-cream2 rounded-lg p-4">
                     <p class="text-xs font-semibold uppercase text-hitam2 mb-1">Jawabanmu</p>
-                    <p class="text-sm">{{ $answer->jawaban ?: '(tidak dijawab)' }}</p>
+                    <p class="text-sm">{{ $answer->teksJawaban() ?: '(tidak dijawab)' }}</p>
                 </div>
             </div>
         @endforeach

@@ -26,7 +26,7 @@ return new class extends Migration
         });
 
         Schema::table('pilihans', function (Blueprint $table) {
-            $table->unsignedTinyInteger('persentase_correct')->default(0)->after('pilihan_jawaban');
+            $table->TinyInteger('persentase_correct')->default(0)->after('pilihan_jawaban');
         });
         DB::table('pilihans')->where('is_correct', true)->update(['persentase_correct' => 100]);
         Schema::table('pilihans', fn (Blueprint $t) => $t->dropColumn('is_correct'));

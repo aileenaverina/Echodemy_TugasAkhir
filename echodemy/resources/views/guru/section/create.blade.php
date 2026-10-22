@@ -33,7 +33,9 @@
     </header>
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-
+        @if ($errors->any())
+            <div class="bg-coral/10 text-coral text-sm rounded-lg px-4 py-3 mb-4">{{ $errors->first() }}</div>
+        @endif
         <!-- Step 1: Pilih tipe -->
         <div id="type-picker">
             <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Tambah ke {{ $bahanAjar->judul }}
@@ -208,9 +210,20 @@
                             class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                     </div>
                     <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Kategori Penilaian</label>
+                        <select name="kategori"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            <option value="harian">Harian</option>
+                            <option value="tengah_semester">Tengah Semester (UTS)</option>
+                            <option value="akhir_semester">Akhir Semester (UAS)</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="text-xs font-semibold uppercase text-hitam2">Bobot Nilai Akhir (%)</label>
                         <input type="number" name="persen_nilai_akhir" min="0" max="100"
                             class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                        <p class="text-xs text-hitam2 mt-1">0 = tidak masuk penilaian. Kalau lebih dari 0, batas waktu
+                            wajib diisi.</p>
                     </div>
                 </div>
                 <button type="submit"
@@ -254,12 +267,33 @@
                             <input type="number" name="waktu_kerja" min="1" required
                                 class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                         </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-semibold uppercase text-hitam2">Kategori Penilaian</label>
+                                <select name="kategori"
+                                    class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                                    <option value="harian">Harian</option>
+                                    <option value="tengah_semester">Tengah Semester (UTS)</option>
+                                    <option value="akhir_semester">Akhir Semester (UAS)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold uppercase text-hitam2">Nilai yang Diambil</label>
+                                <select name="penilaian_percobaan"
+                                    class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                                    <option value="tertinggi">Percobaan tertinggi</option>
+                                    <option value="terakhir">Percobaan terakhir</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-semibold uppercase text-hitam2">Bobot Nilai Akhir (%)</label>
                             <input type="number" name="persen_nilai_akhir" min="0" max="100"
                                 class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            <p class="text-xs text-hitam2 mt-1">0 = tidak masuk penilaian. Kalau lebih dari 0, batas
+                                waktu wajib diisi.</p>
                         </div>
                         <label class="flex items-center gap-2 mt-7 text-sm">
                             <input type="checkbox" name="is_random" value="1"
@@ -271,8 +305,11 @@
 
                 <div id="soal-list" class="space-y-4"></div>
 
-                <button type="button" id="add-soal-btn" class="text-sm font-semibold text-coral hover:underline">+
-                    Tambah Soal</button>
+                <div class="flex items-center justify-between">
+                    <button type="button" id="add-soal-btn"
+                        class="text-sm font-semibold text-coral hover:underline">+ Tambah Soal</button>
+                    <p id="total-poin" class="text-sm font-semibold text-coral">Total poin: 0/100</p>
+                </div>
 
                 <div class="pt-2">
                     <button type="submit"
@@ -322,10 +359,18 @@
             </label>
 
             <div class="soal-field-pg">
-                <label class="text-xs font-semibold uppercase text-hitam2 block mb-2">Pilihan Jawaban</label>
+                <label class="text-xs font-semibold uppercase text-hitam2 block mb-1">Pilihan Jawaban</label>
+                <p class="text-xs text-hitam2 mb-2">Isi persentase pilihan yang benar (total harus 100%): jawaban
+                    tunggal 100%, jawaban ganda dibagi, misal 50 / 30 / 20. Pilihan salah isi 0, atau angka negatif
+                    (misal -25) untuk mengurangi nilai kalau dipilih.</p>
                 <div class="pilihan-list space-y-2"></div>
-                <button type="button" class="add-pilihan-btn text-sm font-semibold text-coral hover:underline mt-2">+
-                    Tambah Pilihan</button>
+                <div class="flex items-center justify-between mt-2">
+                    <button type="button" class="add-pilihan-btn text-sm font-semibold text-coral hover:underline">+
+                        Tambah Pilihan</button>
+                    <span class="pilihan-total text-xs font-semibold text-coral">Total benar: 0/100%</span>
+                </div>
+                <p class="pilihan-hint hidden text-xs text-amber mt-1">Soal ini berjawaban ganda tanpa pilihan negatif,
+                    jadi siswa bisa mencentang semua pilihan untuk dapat 100%.</p>
             </div>
 
             <div class="soal-field-isian hidden">
@@ -341,10 +386,14 @@
 
     <template id="pilihan-template">
         <div class="pilihan-item flex items-center gap-2">
-            <input type="radio" class="pilihan-benar shrink-0">
             <input type="text"
                 class="pilihan-teks flex-1 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"
                 placeholder="Teks pilihan">
+            <div class="relative w-24 shrink-0">
+                <input type="number" min="-100" max="100" value="0"
+                    class="pilihan-persen w-full pr-7 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm text-right">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-hitam2">%</span>
+            </div>
             <button type="button" class="remove-pilihan-btn text-coral shrink-0">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -407,24 +456,58 @@
                     $soal.find('.soal-nilai').attr('name', `soal[${soalIdx}][nilai]`);
                     $soal.find('.soal-is-random').attr('name', `soal[${soalIdx}][is_random]`);
 
-                    // Pilihan ganda
                     $soal.find('.pilihan-item').each(function(pilihanIdx) {
-                        const $pilihan = $(this);
-                        $pilihan.find('.pilihan-teks').attr('name',
+                        $(this).find('.pilihan-teks').attr('name',
                             `soal[${soalIdx}][pilihan][${pilihanIdx}][teks]`);
-                        $pilihan.find('.pilihan-benar').attr('name',
-                            `soal[${soalIdx}][jawaban_benar_radio]`).val(pilihanIdx);
+                        $(this).find('.pilihan-persen').attr('name',
+                            `soal[${soalIdx}][pilihan][${pilihanIdx}][persentase]`);
                     });
 
-                    // Hidden field jawaban_benar ikut soal ini, hapus dulu biar gak numpuk
-                    $soal.find('input[name="soal[' + soalIdx + '][jawaban_benar]"]').remove();
-
-                    // Jawaban isian
                     $soal.find('.jawaban-isian-item').each(function(jawabanIdx) {
                         $(this).find('.jawaban-isian-teks').attr('name',
                             `soal[${soalIdx}][jawaban][${jawabanIdx}]`);
                     });
+
+                    updateTotalPoin();
+                    updateTotal($soal);
                 });
+            }
+
+            function updateTotal($soal) {
+                let positif = 0,
+                    jumlahPositif = 0,
+                    adaNegatif = false;
+
+                $soal.find('.pilihan-persen').each(function() {
+                    const v = parseInt($(this).val()) || 0;
+                    if (v > 0) {
+                        positif += v;
+                        jumlahPositif++;
+                    }
+                    if (v < 0) adaNegatif = true;
+                });
+
+                $soal.find('.pilihan-total')
+                    .text('Total benar: ' + positif + '/100%')
+                    .toggleClass('text-teal', positif === 100)
+                    .toggleClass('text-coral', positif !== 100);
+
+                $soal.find('.pilihan-hint').toggleClass('hidden', !(jumlahPositif > 1 && !adaNegatif));
+            }
+
+            function updateTotalPoin() {
+                let total = 0;
+                $('#soal-list .soal-nilai').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+                total = Math.round(total * 100) / 100;
+
+                $('#total-poin')
+                    .text('Total poin: ' + total + '/100')
+                    .toggleClass('text-teal', total === 100)
+                    .toggleClass('text-coral', total !== 100);
+
+                return total;
             }
 
             function addSoal() {
@@ -440,18 +523,9 @@
             }
 
             function addPilihanRaw($soal) {
-                const $pilihan = $($('#pilihan-template').html());
-                $soal.find('.pilihan-list').append($pilihan);
-
-                $pilihan.find('.pilihan-benar').on('change', function() {
-                    const soalIdx = $soal.data('index');
-                    $soal.find('input[name="soal[' + soalIdx + '][jawaban_benar]"]').remove();
-                    const pilihanIdx = $pilihan.index();
-                    $soal.append(
-                        `<input type="hidden" name="soal[${soalIdx}][jawaban_benar]" value="${pilihanIdx}">`
-                    );
-                });
+                $soal.find('.pilihan-list').append($($('#pilihan-template').html()));
             }
+
 
             function addJawabanIsian($soal) {
                 const $jawaban = $($('#jawaban-isian-template').html());
@@ -461,13 +535,59 @@
 
             function toggleSoalFields($soal) {
                 const tipe = $soal.find('.soal-tipe').val();
-                $soal.find('.soal-field-pg').toggleClass('hidden', tipe !== 'pilihan_ganda');
-                $soal.find('.soal-field-isian').toggleClass('hidden', tipe !== 'isian');
+                const isPg = tipe === 'pilihan_ganda';
+                const isIsian = tipe === 'isian';
 
-                if (tipe === 'isian' && $soal.find('.jawaban-isian-item').length === 0) {
+                // input yang disembunyikan dinonaktifkan supaya tidak ikut terkirim dan memicu validasi
+                $soal.find('.soal-field-pg').toggleClass('hidden', !isPg).find(':input').prop('disabled', !isPg);
+                $soal.find('.soal-field-isian').toggleClass('hidden', !isIsian).find(':input').prop('disabled', !
+                    isIsian);
+
+                if (isIsian && $soal.find('.jawaban-isian-item').length === 0) {
                     addJawabanIsian($soal);
                 }
             }
+
+            $(document).on('input', '.pilihan-persen', function() {
+                updateTotal($(this).closest('.soal-item'));
+            });
+            $(document).on('input', '.soal-nilai', updateTotalPoin);
+
+            $('#form-latihan form').on('submit', function(e) {
+                let error = null;
+
+                $('#soal-list .soal-item').each(function(i) {
+                    if ($(this).find('.soal-tipe').val() !== 'pilihan_ganda') return;
+
+                    let positif = 0;
+                    $(this).find('.pilihan-persen').each(function() {
+                        const v = parseInt($(this).val()) || 0;
+                        if (v > 0) positif += v;
+                    });
+
+                    if (positif !== 100) {
+                        error = 'Soal ' + (i + 1) +
+                            ': total persentase jawaban benar harus 100% (sekarang ' + positif +
+                            '%).';
+                        return false;
+                    }
+                });
+
+                const totalPoin = updateTotalPoin();
+                if (!error && totalPoin !== 100) {
+                    error = 'Total poin semua soal harus 100 (sekarang ' + totalPoin + ').';
+                }
+
+                if (error) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Belum bisa disimpan',
+                        text: error,
+                        confirmButtonColor: '#1C1A17'
+                    });
+                }
+            });
 
             $('#add-soal-btn').on('click', addSoal);
             addSoal();

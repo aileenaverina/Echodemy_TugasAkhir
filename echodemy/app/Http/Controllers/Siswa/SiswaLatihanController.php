@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\DetailLatihan;
 use App\Models\Latihan;
 use App\Models\Submission;
+use App\Services\SubmissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,10 +15,11 @@ use Illuminate\View\View;
 
 class SiswaLatihanController extends Controller
 {
-    public function show(Latihan $latihan): View
+    public function show(Latihan $latihan,  SubmissionService $svc): View
     {
         $siswa = auth()->user();
         $this->authorize($latihan);
+        $svc->finalisasiKedaluwarsa();
 
         $submissions = Submission::where('latihan_id', $latihan->id)
             ->where('user_id', $siswa->id)
@@ -81,7 +83,7 @@ class SiswaLatihanController extends Controller
         return redirect()->route('siswa.latihan.kerjakan', [$latihan, $submission]);
     }
 
-    public function kerjakan(Request $request, Latihan $latihan, Submission $submission): View|RedirectResponse
+    public function kerjakan(Request $request, Latihan $latihan, Submission $submission, SubmissionService $svc): View|RedirectResponse
     {
         $this->authorizeSubmission($latihan, $submission);
         abort_if($submission->status !== 'draft', 403, 'Percobaan ini sudah selesai.');
@@ -99,10 +101,13 @@ class SiswaLatihanController extends Controller
         $jawabanTersimpan = Answer::where('submission_id', $submission->id)
             ->pluck('jawaban', 'detail_latihan_id');
 
-        $deadline = $submission->created_at->addMinutes($latihan->waktu_kerja);
+        $deadline = $submission->created_at->copy()->addMinutes($latihan->waktu_kerja);
 
         if (now()->greaterThan($deadline)) {
-            return $this->finalisasi($latihan, $submission, telat: true);
+            $svc->finalisasi($submission);
+
+            return redirect()->route('siswa.latihan.show', $latihan)
+                ->with('error', 'Waktu habis, jawabanmu sudah tersimpan otomatis.');
         }
 
         return view('siswa.latihan.kerjakan', compact(
@@ -124,26 +129,34 @@ class SiswaLatihanController extends Controller
         $validated = $request->validate([
             'detail_latihan_id' => ['required', 'exists:detail_latihans,id'],
             'jawaban' => ['nullable', 'string'],
-            'pilihan_id' => ['nullable', 'exists:pilihans,id'],
+            'pilihan_ids' => ['nullable', 'array'],
+            'pilihan_ids.*' => ['integer'],
         ]);
 
-        $detail = DetailLatihan::with('pilihans')->find($validated['detail_latihan_id']);
+        $detail = DetailLatihan::with('pilihans')->findOrFail($validated['detail_latihan_id']);
+        abort_unless($detail->latihan_id === $latihan->id, 404);
 
-        $jawabanText = $validated['jawaban'] ?? null;
+        $jawabanText = $validated['jawaban'] ?? '';
         $nilai = 0;
 
+        if ($detail->tipe_soal === 'pilihan_ganda') {
+            $ids = collect($validated['pilihan_ids'] ?? [])
+                ->map(fn($id) => (int) $id)
+                ->unique()
+                ->filter(fn($id) => $detail->pilihans->contains('id', $id))
+                ->values();
 
-        if ($detail->tipe_soal === 'pilihan_ganda' && ! empty($validated['pilihan_id'])) {
-            $pilihan = $detail->pilihans->firstWhere('id', $validated['pilihan_id']);
-            $jawabanText = $pilihan?->pilihan_jawaban;
-            $nilai = $pilihan?->is_correct ? $detail->nilai : 0;
+            // persentase positif menambah, negatif mengurangi; hasil dibatasi 0-100%
+            $persen = $detail->pilihans->whereIn('id', $ids)->sum('persentase_correct');
+            $nilai = round($detail->nilai * max(0, min($persen, 100)) / 100, 2);
+            $jawabanText = $ids->isEmpty() ? '' : $ids->toJson();
         } elseif ($detail->tipe_soal === 'isian' && is_array($detail->jawaban) && count($detail->jawaban)) {
-            $cocok = collect($detail->jawaban)->contains(function ($benar) use ($jawabanText) {
-                return strtolower(trim($benar)) === strtolower(trim((string) $jawabanText));
-            });
+            $cocok = collect($detail->jawaban)->contains(
+                fn($benar) => strtolower(trim($benar)) === strtolower(trim($jawabanText))
+            );
             $nilai = $cocok ? $detail->nilai : 0;
         }
-        // Esai murni: nilai dibiarkan 0, menunggu koreksi manual guru
+        // esai: nilai 0 sampai dikoreksi guru
 
         Answer::updateOrCreate(
             ['submission_id' => $submission->id, 'detail_latihan_id' => $detail->id],
@@ -153,12 +166,13 @@ class SiswaLatihanController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function selesai(Latihan $latihan, Submission $submission): RedirectResponse
+    public function selesai(Latihan $latihan, Submission $submission, SubmissionService $svc): RedirectResponse
     {
         $this->authorizeSubmission($latihan, $submission);
-        abort_if($submission->status !== 'draft', 403);
 
-        $this->finalisasi($latihan, $submission, telat: false);
+        if ($submission->status === 'draft') {
+            $svc->finalisasi($submission);
+        }
 
         return redirect()->route('siswa.latihan.show', $latihan)->with('success', 'Latihan berhasil dikumpulkan.');
     }

@@ -11,6 +11,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class GuruSectionController extends Controller
 {
@@ -85,9 +87,10 @@ class GuruSectionController extends Controller
 
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
+            'kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'tipe_pengumpulan' => ['required', 'in:file,text,keduanya'],
             'file' => ['nullable', 'file', 'max:20480'],
-            'batas_waktu' => ['nullable', 'date'],
+            'batas_waktu' => ['nullable', 'date', Rule::requiredIf(fn() => (int) $request->input('persen_nilai_akhir') > 0)],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
@@ -95,6 +98,7 @@ class GuruSectionController extends Controller
 
         $bahanAjar->assignments()->create([
             'judul' => $validated['judul'],
+            'kategori' => $validated['kategori'],
             'tipe_pengumpulan' => $validated['tipe_pengumpulan'],
             'file' => $filePath,
             'batas_waktu' => $validated['batas_waktu'] ?? null,
@@ -114,7 +118,9 @@ class GuruSectionController extends Controller
 
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
-            'batas_waktu' => ['nullable', 'date'],
+            'kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
+            'penilaian_percobaan' => ['required', 'in:tertinggi,terakhir'],
+            'batas_waktu' => ['nullable', 'date', Rule::requiredIf(fn() => (int) $request->input('persen_nilai_akhir') > 0)],
             'maksimal_percobaan' => ['required', 'integer', 'min:1'],
             'waktu_kerja' => ['required', 'integer', 'min:1'],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -127,14 +133,36 @@ class GuruSectionController extends Controller
             'soal.*.jawaban.*' => ['nullable', 'string'],
             'soal.*.nilai' => ['required', 'numeric', 'min:0'],
             'soal.*.is_random' => ['nullable', 'boolean'],
-            'soal.*.pilihan' => ['required_if:soal.*.tipe_soal,pilihan_ganda', 'array'],
-            'soal.*.pilihan.*.teks' => ['required_with:soal.*.pilihan', 'string'],
-            'soal.*.jawaban_benar' => ['required_if:soal.*.tipe_soal,pilihan_ganda', 'nullable', 'integer'],
+            'soal.*.pilihan' => ['required_if:soal.*.tipe_soal,pilihan_ganda', 'array', 'min:2'],
+            'soal.*.pilihan.*.teks' => ['required', 'string'],
+            'soal.*.pilihan.*.persentase' => ['required', 'integer', 'min:-100', 'max:100'],
         ]);
+
+        $totalPoin = round(collect($validated['soal'])->sum(fn($s) => (float) $s['nilai']), 2);
+        if (abs($totalPoin - 100) > 0.001) {
+            throw ValidationException::withMessages([
+                'soal' => "Total poin semua soal harus 100 (sekarang {$totalPoin}).",
+            ]);
+        }
+
+        foreach ($validated['soal'] as $i => $soal) {
+            if ($soal['tipe_soal'] === 'pilihan_ganda') {
+                $benar = collect($soal['pilihan'])->pluck('persentase')
+                    ->map(fn($p) => (int) $p)->filter(fn($p) => $p > 0)->sum();
+
+                if ($benar !== 100) {
+                    throw ValidationException::withMessages([
+                        "soal.$i.pilihan" => 'Soal ' . ($i + 1) . ': total persentase jawaban benar harus 100% (sekarang ' . $benar . '%).',
+                    ]);
+                }
+            }
+        }
 
         DB::transaction(function () use ($validated, $bahanAjar, $request) {
             $latihan = $bahanAjar->latihans()->create([
                 'judul' => $validated['judul'],
+                'kategori' => $validated['kategori'],
+                'penilaian_percobaan' => $validated['penilaian_percobaan'],
                 'batas_waktu' => $validated['batas_waktu'] ?? null,
                 'maksimal_percobaan' => $validated['maksimal_percobaan'],
                 'waktu_kerja' => $validated['waktu_kerja'],
@@ -161,7 +189,7 @@ class GuruSectionController extends Controller
                         Pilihan::create([
                             'nomor_abjad' => $abjad[$i] ?? (string) $i,
                             'pilihan_jawaban' => $pilihan['teks'],
-                            'is_correct' => (int) $soal['jawaban_benar'] === $i,
+                            'persentase_correct' => (int) $pilihan['persentase'],
                             'detail_latihan_id' => $detail->id,
                         ]);
                     }

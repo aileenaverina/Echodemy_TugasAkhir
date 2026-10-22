@@ -7,6 +7,7 @@ use App\Models\BahanAjar;
 use App\Models\Latihan;
 use App\Models\MataPelajaranKelas;
 use Illuminate\Support\Collection;
+use App\Services\SubmissionService;
 
 class NilaiService
 {
@@ -29,7 +30,9 @@ class NilaiService
         }
 
         $maks = $latihan->detailLatihans->sum('nilai');
-        $skor = fn ($s) => $maks > 0 ? round($s->answers->sum('nilai') / $maks * 100, 2) : 0;
+        $skor = fn($s) => $s->nilai_akhir !== null
+            ? (float) $s->nilai_akhir
+            : ($maks > 0 ? round($s->answers->sum('nilai') / $maks * 100, 2) : 0);
 
         $dinilai = $submissions->where('status', 'dinilai');
         $dipilih = $this->pilih($dinilai, $latihan->penilaian_percobaan, $skor);
@@ -59,12 +62,13 @@ class NilaiService
 
     public function rekapMapel(MataPelajaranKelas $mpk, int $userId, int $semester): array
     {
+        app(SubmissionService::class)->finalisasiKedaluwarsa();
         $bahanAjars = $mpk->bahanAjars()
             ->where('semester', $semester)
             ->with([
                 'latihans.detailLatihans',
-                'latihans.submissions' => fn ($q) => $q->where('user_id', $userId)->with('answers'),
-                'assignments.hasilAssignments' => fn ($q) => $q->where('user_id', $userId),
+                'latihans.submissions' => fn($q) => $q->where('user_id', $userId)->with('answers'),
+                'assignments.hasilAssignments' => fn($q) => $q->where('user_id', $userId),
             ])
             ->orderBy('created_at')
             ->get();
@@ -73,10 +77,11 @@ class NilaiService
 
         foreach ($bahanAjars as $ba) {
             foreach ($ba->latihans as $l) {
-                $items->push($this->item($ba, $l->judul, 'latihan', $l->kategori ?? 'harian', $l->persen_nilai_akhir, $this->nilaiLatihan($l, $userId)));
+                $items->push($this->item($ba, $l->judul, 'latihan', $l->kategori, $l->persen_nilai_akhir, $this->nilaiLatihan($l, $userId)));
             }
             foreach ($ba->assignments as $a) {
-                $items->push($this->item($ba, $a->judul, 'assignment', 'harian', $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)));
+                //$items->push($this->item($ba, $a->judul, 'assignment', 'harian', $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)));
+                $items->push($this->item($ba, $a->judul, 'assignment', $a->kategori, $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)));
             }
         }
 
@@ -94,12 +99,12 @@ class NilaiService
         }
 
         $lengkap = empty($alasan);
-        $hasilAkhir = $lengkap ? round($dihitung->sum(fn ($i) => $i['nilai'] * $i['bobot']) / 100, 1) : null;
+        $hasilAkhir = $lengkap ? round($dihitung->sum(fn($i) => $i['nilai'] * $i['bobot']) / 100, 1) : null;
 
-        $punyaSementara = $dihitung->filter(fn ($i) => $i['sementara'] !== null);
+        $punyaSementara = $dihitung->filter(fn($i) => $i['sementara'] !== null);
         $bobotSementara = (int) $punyaSementara->sum('bobot');
         $sementara = $bobotSementara > 0
-            ? round($punyaSementara->sum(fn ($i) => $i['sementara'] * $i['bobot']) / $bobotSementara, 1)
+            ? round($punyaSementara->sum(fn($i) => $i['sementara'] * $i['bobot']) / $bobotSementara, 1)
             : null;
 
         $kategori = [];
@@ -109,7 +114,7 @@ class NilaiService
             $kategori[$k] = [
                 'bobot' => $b,
                 'nilai' => $b > 0 && $g->whereNull('nilai')->isEmpty()
-                    ? round($g->sum(fn ($i) => $i['nilai'] * $i['bobot']) / $b, 1)
+                    ? round($g->sum(fn($i) => $i['nilai'] * $i['bobot']) / $b, 1)
                     : null,
             ];
         }

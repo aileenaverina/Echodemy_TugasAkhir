@@ -37,7 +37,7 @@
         <div class="flex gap-1 mb-6">
             @foreach ($soalList as $index => $item)
                 <div
-                    class="h-1.5 flex-1 rounded-full {{ isset($jawabanTersimpan[$item->id]) ? 'bg-teal' : ($index + 1 === $nomor ? 'bg-amber' : 'bg-cream2') }}">
+                    class="h-1.5 flex-1 rounded-full {{ !empty($jawabanTersimpan[$item->id]) ? 'bg-teal' : ($index + 1 === $nomor ? 'bg-amber' : 'bg-cream2') }}">
                 </div>
             @endforeach
         </div>
@@ -58,21 +58,28 @@
                             $pilihans = $soal->is_random
                                 ? $soal->pilihans->shuffle()
                                 : $soal->pilihans->sortBy('nomor_abjad');
-                            $jawabanSekarang = $jawabanTersimpan[$soal->id] ?? null;
+                            $terpilih = json_decode($jawabanTersimpan[$soal->id] ?? '[]', true) ?: [];
+                            $jumlahBenar = $soal->pilihans->where('persentase_correct', '>', 0)->count();
+                            $adaPenalti = $soal->pilihans->contains(fn($p) => $p->persentase_correct < 0);
+                            $inputType = $jumlahBenar > 1 ? 'checkbox' : 'radio';
                         @endphp
+
+                        @if ($inputType === 'checkbox')
+                            <p class="text-xs font-semibold text-coral mb-3">
+                                Pilih semua jawaban yang
+                                benar.{{ $adaPenalti ? ' Jawaban yang salah dapat mengurangi nilai.' : '' }}
+                            </p>
+                        @endif
+
                         <div class="space-y-2">
                             @foreach ($pilihans as $pilihan)
                                 <label
-                                    class="pilihan-option flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition
-                                    {{ $jawabanSekarang === $pilihan->pilihan_jawaban ? 'border-amber bg-amber/10' : 'border-border hover:bg-cream2' }}">
-                                    <input type="radio" name="pilihan_id" value="{{ $pilihan->id }}"
-                                        class="hidden pilihan-radio"
-                                        {{ $jawabanSekarang === $pilihan->pilihan_jawaban ? 'checked' : '' }}>
+                                    class="pilihan-option flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition border-border hover:bg-cream2">
+                                    <input type="{{ $inputType }}" name="pilihan_ids[]" value="{{ $pilihan->id }}"
+                                        class="hidden pilihan-input"
+                                        {{ in_array($pilihan->id, $terpilih) ? 'checked' : '' }}>
                                     <span
-                                        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0
-                                        {{ $jawabanSekarang === $pilihan->pilihan_jawaban ? 'bg-amber text-hitam' : 'bg-cream2 text-hitam2' }}">
-                                        {{ $pilihan->nomor_abjad }}
-                                    </span>
+                                        class="pilihan-badge w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 bg-cream2 text-hitam2">{{ $pilihan->nomor_abjad }}</span>
                                     <span class="text-sm">{{ $pilihan->pilihan_jawaban }}</span>
                                 </label>
                             @endforeach
@@ -95,7 +102,7 @@
                     @foreach ($soalList as $index => $item)
                         <a href="{{ route('siswa.latihan.kerjakan', [$latihan, $submission, 'soal' => $index + 1]) }}"
                             class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold
-                            {{ $index + 1 === $nomor ? 'bg-amber text-hitam' : (isset($jawabanTersimpan[$item->id]) ? 'bg-periwinkle text-white' : 'bg-cream2 text-hitam2') }}">
+                            {{ $index + 1 === $nomor ? 'bg-amber text-hitam' : (!empty($jawabanTersimpan[$item->id]) ? 'bg-periwinkle text-white' : 'bg-cream2 text-hitam2') }}">
                             {{ $index + 1 }}
                         </a>
                     @endforeach
@@ -131,13 +138,17 @@
             const nextUrl = @json($nomor < $soalList->count() ? route('siswa.latihan.kerjakan', [$latihan, $submission, 'soal' => $nomor + 1]) : null);
             const selesaiUrl = '{{ route('siswa.latihan.selesai', [$latihan, $submission]) }}';
 
-            $('.pilihan-option').on('click', function() {
-                $('.pilihan-option').removeClass('border-amber bg-amber/10').addClass('border-border');
-                $(this).addClass('border-amber bg-amber/10').removeClass('border-border');
-                $(this).find('.pilihan-radio').prop('checked', true);
-                $(this).find('span').first().removeClass('bg-cream2 text-hitam2').addClass(
-                    'bg-amber text-hitam');
-            });
+            function refreshPilihan() {
+                $('.pilihan-option').each(function() {
+                    const on = $(this).find('.pilihan-input').prop('checked');
+                    $(this).toggleClass('border-amber bg-amber/10', on).toggleClass('border-border', !on);
+                    $(this).find('.pilihan-badge').toggleClass('bg-amber text-hitam', on).toggleClass(
+                        'bg-cream2 text-hitam2', !on);
+                });
+            }
+
+            $('.pilihan-input').on('change', refreshPilihan);
+            refreshPilihan();
 
             function saveAnswer(callback) {
                 const data = $('#jawaban-form').serialize();

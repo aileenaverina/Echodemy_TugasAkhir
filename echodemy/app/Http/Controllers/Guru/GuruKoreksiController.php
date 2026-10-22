@@ -30,6 +30,7 @@ class GuruKoreksiController extends Controller
         $validated = $request->validate([
             'nilai' => ['required', 'array'],
             'nilai.*' => ['required', 'numeric', 'min:0'],
+            'nilai_akhir' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         foreach ($validated['nilai'] as $answerId => $nilai) {
@@ -38,7 +39,10 @@ class GuruKoreksiController extends Controller
                 ->update(['nilai' => $nilai]);
         }
 
-        $submission->update(['status' => 'dinilai']);
+        $submission->update([
+            'status' => 'dinilai',
+            'nilai_akhir' => $validated['nilai_akhir'] ?? null,
+        ]);
 
         return redirect()->route('guru.latihan.show', $latihan)->with('success', 'Nilai berhasil disimpan.');
     }
