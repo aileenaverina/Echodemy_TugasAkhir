@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Ortu;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\MataPelajaranKelas;
+use App\Models\Raport;
 use App\Models\User;
+use App\Services\NilaiService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -13,68 +15,26 @@ class OrtuNilaiController extends Controller
 {
     public function index(): View
     {
-        $anak = $this->getAnak();
+        $anak = auth()->user()->anak();
         $kelas = $anak?->kelas()->where('status', 'aktif')->first();
 
-        $mataPelajaranKelasList = $kelas
-            ? $kelas->penugasanMataPelajaran()->with('mataPelajaran')->get()
-            : collect();
+        $mataPelajaranKelasList = $kelas ? $kelas->penugasanMataPelajaran()->with('mataPelajaran')->get() : collect();
+        $raports = $anak ? Raport::terbaruUntuk($anak->id) : collect();
 
-        return view('ortu.nilai.index', compact('anak', 'mataPelajaranKelasList'));
+        return view('ortu.nilai.index', compact('anak', 'mataPelajaranKelasList', 'raports'));
     }
 
-    public function show(MataPelajaranKelas $mataPelajaranKelas): View
+    public function show(Request $request, MataPelajaranKelas $mataPelajaranKelas, NilaiService $nilai): View
     {
-        $anak = $this->getAnak();
+        $anak = auth()->user()->anak();
         abort_unless($anak, 404);
-
-        $isAnggota = $mataPelajaranKelas->kelas->siswa->pluck('id')->contains($anak->id);
-        abort_unless($isAnggota, 403);
+        abort_unless($mataPelajaranKelas->kelas->siswa->pluck('id')->contains($anak->id), 403);
 
         $mataPelajaranKelas->load(['kelas', 'mataPelajaran', 'gurus']);
+        $semester = (int) $request->input('semester', 1);
+        $rekap = $nilai->rekapMapel($mataPelajaranKelas, $anak->id, $semester);
         $jumlahSiswa = $mataPelajaranKelas->kelas->siswa()->count();
 
-        $bahanAjars = $mataPelajaranKelas->bahanAjars()
-            ->with(['latihans.submissions.answers', 'assignments.hasilAssignments'])
-            ->get();
-
-        $items = collect();
-
-        foreach ($bahanAjars as $bahanAjar) {
-            foreach ($bahanAjar->latihans as $latihan) {
-                $submission = $latihan->submissions->where('user_id', $anak->id)->sortByDesc('created_at')->first();
-
-                $items->push([
-                    'nama' => $latihan->judul,
-                    'section' => $bahanAjar->judul,
-                    'nilai' => $submission ? $submission->answers->sum('nilai') : null,
-                    'bobot' => $latihan->persen_nilai_akhir,
-                ]);
-            }
-
-            foreach ($bahanAjar->assignments as $assignment) {
-                $hasil = $assignment->hasilAssignments->where('user_id', $anak->id)->first();
-
-                $items->push([
-                    'nama' => $assignment->judul,
-                    'section' => $bahanAjar->judul,
-                    'nilai' => $hasil?->nilai,
-                    'bobot' => $assignment->persen_nilai_akhir,
-                ]);
-            }
-        }
-
-        $itemDenganNilai = $items->filter(fn ($i) => $i['nilai'] !== null && $i['bobot']);
-        $totalBobot = $itemDenganNilai->sum('bobot');
-        $hasilAkhir = $totalBobot > 0
-            ? round($itemDenganNilai->sum(fn ($i) => $i['nilai'] * $i['bobot']) / $totalBobot, 1)
-            : null;
-
-        return view('ortu.nilai.show', compact('mataPelajaranKelas', 'jumlahSiswa', 'items', 'hasilAkhir', 'anak'));
-    }
-
-    protected function getAnak(): ?User
-    {
-       return auth()->user()->anak();
+        return view('ortu.nilai.show', compact('mataPelajaranKelas', 'jumlahSiswa', 'rekap', 'semester', 'anak'));
     }
 }

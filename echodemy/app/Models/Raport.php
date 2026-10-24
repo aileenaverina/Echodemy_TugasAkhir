@@ -27,4 +27,15 @@ class Raport extends Model
     {
         return $this->belongsTo(User::class, 'diterbitkan_oleh');
     }
+
+    public static function terbaruUntuk(int $userId)
+    {
+        return static::with('kelas')
+            ->where('user_id', $userId)
+            ->orderByDesc('versi')
+            ->get()
+            ->unique(fn($r) => $r->kelas_id . '-' . $r->semester)
+            ->sortByDesc('created_at')
+            ->values();
+    }
 }

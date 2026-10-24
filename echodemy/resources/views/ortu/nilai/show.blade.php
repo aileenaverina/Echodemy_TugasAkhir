@@ -18,37 +18,7 @@
             </div>
         </div>
 
-        <div class="bg-putih rounded-2xl shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="border-b border-border text-left text-[11px] tracking-widest uppercase text-hitam2">
-                        <th class="px-5 py-3 font-semibold">Nama</th>
-                        <th class="px-5 py-3 font-semibold text-right">Nilai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($items as $item)
-                        <tr class="border-b border-border last:border-0">
-                            <td class="px-5 py-4">
-                                <p class="font-medium">{{ $item['nama'] }}</p>
-                                <p class="text-xs text-hitam2">{{ $item['section'] }}</p>
-                            </td>
-                            <td class="px-5 py-4 text-right">{{ $item['nilai'] ?? '-' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="2" class="px-5 py-8 text-center text-hitam2">Belum ada tugas atau kuis di mata pelajaran ini.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if ($items->isNotEmpty())
-            <div class="flex items-center justify-between px-1 py-4">
-                <p class="font-display font-semibold text-teal">Hasil Akhir</p>
-                <p class="font-display font-semibold text-lg">{{ $hasilAkhir ?? '-' }}</p>
-            </div>
-        @endif
+        @include('partials.semester-tabs')
+        @include('partials.rekap-nilai')
     </div>
 </x-app-layout>

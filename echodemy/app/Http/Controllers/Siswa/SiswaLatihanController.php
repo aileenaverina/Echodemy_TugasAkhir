@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\DetailLatihan;
 use App\Models\Latihan;
 use App\Models\Submission;
+use App\Services\NilaiService;
 use App\Services\SubmissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,37 +16,25 @@ use Illuminate\View\View;
 
 class SiswaLatihanController extends Controller
 {
-    public function show(Latihan $latihan,  SubmissionService $svc): View
+    public function show(Latihan $latihan, SubmissionService $svc, NilaiService $nilai): View
     {
         $siswa = auth()->user();
         $this->authorize($latihan);
         $svc->finalisasiKedaluwarsa();
 
-        $submissions = Submission::where('latihan_id', $latihan->id)
-            ->where('user_id', $siswa->id)
-            ->whereIn('status', ['dikumpulkan', 'telat', 'dinilai'])
-            ->with('answers')
-            ->get();
+        $latihan->load(['detailLatihans', 'submissions' => fn($q) => $q->where('user_id', $siswa->id)->with('answers')]);
 
-        $percobaanDipakai = $submissions->count();
-        $sisaPercobaan = max(0, $latihan->maksimal_percobaan - $percobaanDipakai);
-
-        $nilaiTertinggi = $submissions->isNotEmpty()
-            ? $submissions->max(fn($s) => $s->answers->sum('nilai'))
-            : null;
-
-        $submissionAktif = Submission::where('latihan_id', $latihan->id)
-            ->where('user_id', $siswa->id)
-            ->where('status', 'draft')
-            ->first();
-
-        $sudahPernahKerja = $percobaanDipakai > 0;
-        $submissionTerakhir = $submissions->sortByDesc('created_at')->first();
+        $dikirim = $latihan->submissions->whereIn('status', ['dikumpulkan', 'telat', 'dinilai']);
+        $sisaPercobaan = max(0, $latihan->maksimal_percobaan - $dikirim->count());
+        $hasilNilai = $nilai->nilaiLatihan($latihan, $siswa->id);
+        $submissionAktif = $latihan->submissions->firstWhere('status', 'draft');
+        $sudahPernahKerja = $dikirim->isNotEmpty();
+        $submissionTerakhir = $dikirim->sortByDesc('created_at')->first();
 
         return view('siswa.latihan.show', compact(
             'latihan',
             'sisaPercobaan',
-            'nilaiTertinggi',
+            'hasilNilai',
             'sudahPernahKerja',
             'submissionAktif',
             'submissionTerakhir'

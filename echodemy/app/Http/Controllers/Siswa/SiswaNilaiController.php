@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\Raport;
 use App\Services\NilaiService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,26 +14,13 @@ class SiswaNilaiController extends Controller
     {
         $siswa = auth()->user();
         $kelas = $siswa->kelas()->where('status', 'aktif')->first();
-
-        $mataPelajaranKelasList = collect();
-        $activeMpk = null;
-
-        if ($kelas) {
-            $mataPelajaranKelasList = $kelas->penugasanMataPelajaran()->with('mataPelajaran')->get();
-
-            $activeMpkId = $request->input('mapel', $mataPelajaranKelasList->first()?->id);
-            $activeMpk = $mataPelajaranKelasList->firstWhere('id', (int) $activeMpkId);
-        }
-
         $semester = (int) $request->input('semester', 1);
-        $rekap = $activeMpk ? $nilai->rekapMapel($activeMpk, $siswa->id, $semester) : null;
 
-        return view('siswa.nilai.index', compact(
-            'kelas',
-            'mataPelajaranKelasList',
-            'activeMpk',
-            'rekap',
-            'semester'
-        ));
+        $mataPelajaranKelasList = $kelas ? $kelas->penugasanMataPelajaran()->with('mataPelajaran')->get() : collect();
+        $activeMpk = $mataPelajaranKelasList->firstWhere('id', (int) $request->input('mapel', $mataPelajaranKelasList->first()?->id));
+        $rekap = $activeMpk ? $nilai->rekapMapel($activeMpk, $siswa->id, $semester) : null;
+        $raports = Raport::terbaruUntuk($siswa->id);
+
+        return view('siswa.nilai.index', compact('kelas', 'mataPelajaranKelasList', 'activeMpk', 'rekap', 'semester', 'raports'));
     }
 }

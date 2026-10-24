@@ -12,7 +12,12 @@
     @endif
 
     @if ($latihan->batas_waktu)
-        <p class="text-sm font-semibold text-coral mb-4">Deadline: {{ $latihan->batas_waktu->translatedFormat('l, d M Y H:i') }}</p>
+        <p class="text-sm font-semibold text-coral mb-4">Deadline:
+            {{ $latihan->batas_waktu->translatedFormat('l, d M Y H:i') }}</p>
+        @if (now()->greaterThan($latihan->batas_waktu))
+            <p class="text-xs text-hitam2 mb-4">Deadline sudah lewat. Pengumpulan sekarang tercatat telat dan nilainya
+                ditentukan guru.</p>
+        @endif
     @endif
 
     <div class="flex flex-col sm:flex-row gap-4 mb-6">
@@ -39,15 +44,25 @@
 
         <div class="bg-putih rounded-2xl shadow-sm p-5 relative">
             <p class="text-[11px] font-semibold tracking-widest uppercase text-hitam2 mb-1">Nilai</p>
-            <p class="font-display font-semibold text-lg">{{ $nilaiTertinggi ?? '-' }}/100</p>
-            <p class="text-[10px] text-hitam2 absolute top-5 right-5 text-right max-w-[110px]">*Diambil berdasarkan nilai tertinggi</p>
+            <p class="font-display font-semibold text-lg">
+                @if ($hasilNilai['nilai'] !== null)
+                    {{ $hasilNilai['nilai'] }}/100
+                @elseif ($hasilNilai['status'] === 'menunggu_koreksi')
+                    <span class="text-sm text-hitam2">Menunggu penilaian</span>
+                @else
+                    -/100
+                @endif
+            </p>
+            <p class="text-[10px] text-hitam2 absolute top-5 right-5 text-right max-w-[110px]">*Diambil dari percobaan
+                {{ $latihan->penilaian_percobaan }}</p>
         </div>
     </div>
 
     <div class="flex items-center gap-3">
         @if ($submissionAktif)
             <form method="GET" action="{{ route('siswa.latihan.kerjakan', [$latihan, $submissionAktif]) }}">
-                <button type="submit" class="bg-ink text-cream text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-hitam">
+                <button type="submit"
+                    class="bg-ink text-cream text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-hitam">
                     Lanjutkan Mengerjakan
                 </button>
             </form>
@@ -59,7 +74,8 @@
             @if ($sisaPercobaan > 0)
                 <form method="POST" action="{{ route('siswa.latihan.mulai', $latihan) }}">
                     @csrf
-                    <button type="submit" class="bg-putih border border-border text-ink text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-cream2">
+                    <button type="submit"
+                        class="bg-putih border border-border text-ink text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-cream2">
                         Coba Lagi
                     </button>
                 </form>
@@ -67,7 +83,8 @@
         @else
             <form method="POST" action="{{ route('siswa.latihan.mulai', $latihan) }}">
                 @csrf
-                <button type="submit" class="bg-ink text-cream text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-hitam">
+                <button type="submit"
+                    class="bg-ink text-cream text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-hitam">
                     Kerjakan
                 </button>
             </form>
