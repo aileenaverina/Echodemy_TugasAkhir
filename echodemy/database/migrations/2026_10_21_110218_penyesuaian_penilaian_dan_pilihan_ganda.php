@@ -12,10 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // harian jadi nilai eksplisit di latihans
-        DB::statement("ALTER TABLE latihans MODIFY kategori ENUM('harian','tengah_semester','akhir_semester') NULL");
-        DB::table('latihans')->whereNull('kategori')->update(['kategori' => 'harian']);
-        DB::statement("ALTER TABLE latihans MODIFY kategori ENUM('harian','tengah_semester','akhir_semester') NOT NULL DEFAULT 'harian'");
+        DB::statement("ALTER TABLE latihans MODIFY kategori ENUM('harian','tengah_semester','akhir_semester') NOT NULL DEFAULT 'harian'");;
 
         Schema::table('assignments', function (Blueprint $table) {
             $table->enum('kategori', ['harian', 'tengah_semester', 'akhir_semester'])->default('harian')->after('judul');
@@ -26,10 +23,9 @@ return new class extends Migration
         });
 
         Schema::table('pilihans', function (Blueprint $table) {
-            $table->TinyInteger('persentase_correct')->default(0)->after('pilihan_jawaban');
+            $table->tinyInteger('persentase_correct')->default(0)->after('pilihan_jawaban');
+            $table->dropColumn('is_correct');
         });
-        DB::table('pilihans')->where('is_correct', true)->update(['persentase_correct' => 100]);
-        Schema::table('pilihans', fn (Blueprint $t) => $t->dropColumn('is_correct'));
     }
 
     /**
@@ -41,10 +37,10 @@ return new class extends Migration
             $table->boolean('is_correct')->nullable()->after('pilihan_jawaban');
         });
         DB::table('pilihans')->where('persentase_correct', '>', 0)->update(['is_correct' => true]);
-        Schema::table('pilihans', fn (Blueprint $t) => $t->dropColumn('persentase_correct'));
+        Schema::table('pilihans', fn(Blueprint $t) => $t->dropColumn('persentase_correct'));
 
-        Schema::table('submissions', fn (Blueprint $t) => $t->dropColumn('nilai_akhir'));
-        Schema::table('assignments', fn (Blueprint $t) => $t->dropColumn('kategori'));
+        Schema::table('submissions', fn(Blueprint $t) => $t->dropColumn('nilai_akhir'));
+        Schema::table('assignments', fn(Blueprint $t) => $t->dropColumn('kategori'));
 
         DB::statement("ALTER TABLE latihans MODIFY kategori ENUM('harian','tengah_semester','akhir_semester') NULL");
         DB::table('latihans')->where('kategori', 'harian')->update(['kategori' => null]);

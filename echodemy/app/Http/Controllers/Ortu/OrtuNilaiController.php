@@ -75,12 +75,6 @@ class OrtuNilaiController extends Controller
 
     protected function getAnak(): ?User
     {
-        $ortu = auth()->user();
-        $suffix = substr($ortu->kode_user, 1); // buang huruf 'P' di depan
-
-        return User::where('sekolah_id', $ortu->sekolah_id)
-            ->where('role', UserRole::Siswa)
-            ->where('kode_user', 'S' . $suffix)
-            ->first();
+       return auth()->user()->anak();
     }
 }

@@ -42,6 +42,25 @@
         </a>
     </div>
 
+    <div class="bg-putih rounded-2xl shadow-sm p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-8">
+            @foreach ([1, 2] as $s)
+                @php $b = $bobotPerSemester[$s]; @endphp
+                <div>
+                    <p class="text-[11px] font-semibold tracking-widest uppercase text-hitam2 mb-1">Bobot Semester
+                        {{ $s }}</p>
+                    <p
+                        class="font-display font-semibold text-lg {{ $b === 100 ? 'text-teal' : ($b === 0 ? 'text-hitam2' : 'text-coral') }}">
+                        {{ $b }}/100</p>
+                </div>
+            @endforeach
+        </div>
+        <a href="{{ route('guru.bobot.index', $mataPelajaranKelas) }}"
+            class="bg-cream2 text-ink text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-border">
+            Atur Bobot
+        </a>
+    </div>
+
     <!-- Sections -->
     <div class="space-y-3" id="sections-wrapper">
         @forelse ($bahanAjars as $bahanAjar)
@@ -54,7 +73,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                         <div>
-                            <p class="font-display font-semibold">{{ $bahanAjar->judul }}</p>
+                            <p class="font-display font-semibold">{{ $bahanAjar->judul }}
+                                <span
+                                    class="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-cream text-hitam2">Semester
+                                    {{ $bahanAjar->semester }}</span>
+                            </p>
                             @if ($bahanAjar->notes)
                                 <p class="text-sm text-hitam2 mt-0.5">{{ $bahanAjar->notes }}</p>
                             @endif
@@ -100,7 +123,7 @@
                                 <button type="button"
                                     class="edit-section-btn w-8 h-8 rounded-lg bg-amber/60 text-hitam flex items-center justify-center hover:bg-amber/70"
                                     data-id="{{ $bahanAjar->id }}" data-judul="{{ $bahanAjar->judul }}"
-                                    data-notes="{{ $bahanAjar->notes }}">
+                                    data-notes="{{ $bahanAjar->notes }}" data-semester="{{ $bahanAjar->semester }}">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                         stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -295,6 +318,14 @@
                     <textarea name="notes" rows="3"
                         class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></textarea>
                 </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Semester</label>
+                    <select name="semester"
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                    </select>
+                </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button"
                         class="modal-close-btn text-sm font-medium text-hitam2 px-4 py-2 hover:text-ink">Batal</button>
@@ -325,6 +356,14 @@
                     <label class="text-xs font-semibold uppercase text-hitam2">Deskripsi</label>
                     <textarea name="notes" id="edit-section-notes" rows="3"
                         class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Semester</label>
+                    <select name="semester" id="edit-section-semester"
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                    </select>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button"
@@ -399,7 +438,7 @@
                     if (result.isConfirmed) form.submit();
                 });
             });
-            
+
             $('#add-section-btn').on('click', function() {
                 $('#add-section-modal').removeClass('hidden');
             });
@@ -421,8 +460,10 @@
             // Edit section
             $('.edit-section-btn').on('click', function() {
                 const id = $(this).data('id');
+
                 $('#edit-section-judul').val($(this).data('judul'));
                 $('#edit-section-notes').val($(this).data('notes'));
+                $('#edit-section-semester').val($(this).data('semester'));
                 $('#edit-section-form').attr('action',
                     '{{ url('/guru/mata-pelajaran-kelas/' . $mataPelajaranKelas->id . '/section') }}/' +
                     id

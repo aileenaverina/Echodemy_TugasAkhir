@@ -127,4 +127,16 @@ class User extends Authenticatable
             default => $this->nama_lengkap,
         };
     }
+
+    public function anak(): ?self
+    {
+        if ($this->role !== UserRole::OrangTua) {
+            return null;
+        }
+
+        return self::where('sekolah_id', $this->sekolah_id)
+            ->where('role', UserRole::Siswa)
+            ->where('kode_user', 'S' . substr($this->kode_user, 1))
+            ->first();
+    }
 }

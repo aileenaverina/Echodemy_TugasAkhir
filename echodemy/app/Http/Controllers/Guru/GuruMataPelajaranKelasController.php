@@ -24,6 +24,12 @@ class GuruMataPelajaranKelasController extends Controller
             ->orderBy('created_at')
             ->get();
 
+        $bobotPerSemester = collect([1, 2])->mapWithKeys(fn($s) => [
+            $s => (int) $bahanAjars->where('semester', $s)->sum(
+                fn($ba) => $ba->latihans->sum('persen_nilai_akhir') + $ba->assignments->sum('persen_nilai_akhir')
+            ),
+        ]);
+
         $jumlahSiswa = $mataPelajaranKelas->kelas->siswa()->count();
 
         $guruTersedia = User::where('sekolah_id', $mataPelajaranKelas->kelas->sekolah_id)
@@ -37,7 +43,8 @@ class GuruMataPelajaranKelasController extends Controller
             'bahanAjars',
             'jumlahSiswa',
             'guruTersedia',
-            'isPengajar'
+            'isPengajar',
+            'bobotPerSemester'
         ));
     }
 
@@ -48,11 +55,13 @@ class GuruMataPelajaranKelasController extends Controller
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'semester' => ['required', 'in:1,2'],
         ]);
 
         $mataPelajaranKelas->bahanAjars()->create([
             'judul' => $validated['judul'],
             'notes' => $validated['notes'] ?? '',
+            'semester' => $validated['semester'],
             'user_id' => auth()->id(),
         ]);
 
@@ -67,6 +76,7 @@ class GuruMataPelajaranKelasController extends Controller
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'semester' => ['required', 'in:1,2'],
         ]);
 
         $bahanAjar->update($validated);

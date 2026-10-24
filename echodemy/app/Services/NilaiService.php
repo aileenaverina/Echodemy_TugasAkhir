@@ -14,6 +14,7 @@ class NilaiService
     /**
      * Create a new class instance.
      */
+    protected static bool $sudahFinalisasi = false;
     public function __construct()
     {
         //
@@ -25,8 +26,9 @@ class NilaiService
             ->where('user_id', $userId)
             ->whereIn('status', ['dikumpulkan', 'telat', 'dinilai']);
 
-        if ($submissions->isEmpty()) {
-            return $this->tanpaPengumpulan($latihan->batas_waktu);
+        $sedangMengerjakan = $latihan->submissions->where('user_id', $userId)->where('status', 'draft')->isNotEmpty();
+        if ($submissions->isEmpty() && $sedangMengerjakan) {
+            return ['nilai' => null, 'status' => 'belum', 'sementara' => null];
         }
 
         $maks = $latihan->detailLatihans->sum('nilai');
@@ -62,7 +64,10 @@ class NilaiService
 
     public function rekapMapel(MataPelajaranKelas $mpk, int $userId, int $semester): array
     {
-        app(SubmissionService::class)->finalisasiKedaluwarsa();
+        if (! self::$sudahFinalisasi) {
+            app(SubmissionService::class)->finalisasiKedaluwarsa();
+            self::$sudahFinalisasi = true;
+        }
         $bahanAjars = $mpk->bahanAjars()
             ->where('semester', $semester)
             ->with([
@@ -127,6 +132,29 @@ class NilaiService
             'hasil_akhir' => $hasilAkhir,
             'sementara' => $sementara,
             'kategori' => $kategori,
+        ];
+    }
+
+    public function rekapKelas(MataPelajaranKelas $mpk, int $semester): array
+    {
+        $siswaList = $mpk->kelas->siswa;
+        $rekapSiswa = $siswaList->map(fn($s) => $this->rekapMapel($mpk, $s->id, $semester));
+
+        $template = $rekapSiswa->first()['items'] ?? collect();
+
+        $items = $template->where('bobot', '>', 0)->map(function ($item, $i) use ($rekapSiswa) {
+            $nilai = $rekapSiswa->map(fn($r) => $r['items'][$i]['nilai'] ?? null)->filter(fn($n) => $n !== null);
+
+            return $item + ['rata' => $nilai->isNotEmpty() ? round($nilai->avg(), 1) : null];
+        })->values();
+
+        $lengkap = $rekapSiswa->where('lengkap', true);
+
+        return [
+            'items' => $items,
+            'jumlah_siswa' => $siswaList->count(),
+            'jumlah_lengkap' => $lengkap->count(),
+            'rata_akhir' => $lengkap->isNotEmpty() ? round($lengkap->avg('hasil_akhir'), 1) : null,
         ];
     }
 

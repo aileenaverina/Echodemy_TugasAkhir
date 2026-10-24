@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_random')->nullable();
             $table->foreignId('bahan_ajar_id')->constrained('bahan_ajars');
             $table->timestamp('batas_waktu');
-            $table->integer('maksimal_percobaan')->nullable();
+            $table->integer('maksimal_percobaan')->default(1);
             $table->boolean('is_lock')->default(false);
             $table->integer('persen_nilai_akhir');
             $table->integer('waktu_kerja')->nullable();

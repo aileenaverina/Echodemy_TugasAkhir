@@ -100,9 +100,17 @@
                 <p class="font-display font-semibold mb-3">List Soal</p>
                 <div class="flex flex-wrap gap-2">
                     @foreach ($soalList as $index => $item)
+                        @php
+                            $sudahDijawab = isset($jawabanTersimpan[$item->id]) && $jawabanTersimpan[$item->id] !== '';
+                            $bgClass =
+                                $index + 1 === $nomor
+                                    ? 'bg-amber text-hitam'
+                                    : ($sudahDijawab
+                                        ? 'bg-periwinkle text-white'
+                                        : 'bg-cream2 text-hitam2');
+                        @endphp
                         <a href="{{ route('siswa.latihan.kerjakan', [$latihan, $submission, 'soal' => $index + 1]) }}"
-                            class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold
-                            {{ $index + 1 === $nomor ? 'bg-amber text-hitam' : (!empty($jawabanTersimpan[$item->id]) ? 'bg-periwinkle text-white' : 'bg-cream2 text-hitam2') }}">
+                            class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold {{ $bgClass }}">
                             {{ $index + 1 }}
                         </a>
                     @endforeach

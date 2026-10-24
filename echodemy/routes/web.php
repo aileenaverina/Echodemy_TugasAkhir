@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminSekolahController;
 use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guru\GuruAssignmentController;
+use App\Http\Controllers\Guru\GuruBobotController;
 use App\Http\Controllers\Guru\GuruKelasController;
 use App\Http\Controllers\Guru\GuruKelasMataPelajaranController;
 use App\Http\Controllers\Guru\GuruKelasSiswaController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Guru\GuruSectionController;
 use App\Http\Controllers\Guru\GuruShareBahanAjarController;
 use App\Http\Controllers\Ortu\OrtuNilaiController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RaportDownloadController;
 use App\Http\Controllers\Sekolah\SekolahGuruController;
 use App\Http\Controllers\Sekolah\SekolahKelasController;
 use App\Http\Controllers\Sekolah\SekolahLogController;
@@ -49,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware('auth')->get('/raport/{raport}/unduh', [RaportDownloadController::class, 'unduh'])->name('raport.unduh');
 
 //keperluan registrasi 
 Route::view('/registration/pending', 'auth.registration-pending')->name('registration.pending');
@@ -149,6 +153,9 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::get('/rapor', [GuruRaporController::class, 'index'])->name('rapor.index');
     Route::get('/rapor/kelas/{kelas}', [GuruRaporController::class, 'kelas'])->name('rapor.kelas');
     Route::get('/rapor/kelas/{kelas}/siswa/{siswa}', [GuruRaporController::class, 'siswa'])->name('rapor.siswa');
+    Route::get('/rapor/kelas/{kelas}/siswa/{siswa}/cek', [GuruRaporController::class, 'cek'])->name('rapor.cek');
+    Route::post('/rapor/kelas/{kelas}/siswa/{siswa}/terbitkan', [GuruRaporController::class, 'terbitkan'])->name('rapor.terbitkan');
+    Route::post('/rapor/kelas/{kelas}/terbitkan-semua', [GuruRaporController::class, 'terbitkanSemua'])->name('rapor.terbitkan-semua');
 
     Route::get('/log', [GuruLogController::class, 'index'])->name('log.index');
 });
@@ -172,6 +179,9 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
 
     Route::get('/notifikasi', [SiswaNotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::post('/notifikasi/{notif}/toggle', [SiswaNotifikasiController::class, 'toggle'])->name('notifikasi.toggle');
+
+    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'index'])->name('bobot.index');
+    Route::put('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'update'])->name('bobot.update');
 });
 
 Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {

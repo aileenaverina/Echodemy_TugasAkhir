@@ -176,7 +176,6 @@ class GuruSectionController extends Controller
                     'nomor' => $index + 1,
                     'pertanyaan' => $soal['pertanyaan'],
                     'tipe_soal' => $soal['tipe_soal'],
-                    // catatan: kolom DB cuma enum('pilihan_ganda','esai') — 'isian' dibedakan lewat kolom jawaban terisi
                     'jawaban' => $soal['tipe_soal'] === 'isian' ? ($soal['jawaban'] ?? null) : null,
                     'is_random' => $request->boolean("soal.$index.is_random"),
                     'nilai' => $soal['nilai'],
