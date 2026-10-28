@@ -30,9 +30,11 @@ class GuruLogController extends Controller
             ->whereHas('kelas', fn($q) => $q->whereIn('kelass.id', $kelasIds))
             ->pluck('id');
 
-        $query = Log::with('user')
-            ->whereIn('user_id', $siswaIds)
-            ->latest();
+        $scope = $request->input('scope', 'siswa');
+
+        $query = $scope === 'saya'
+            ? Log::with('user')->where('user_id', $guru->id)->latest()
+            : Log::with('user')->whereIn('user_id', $siswaIds)->latest();
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -43,6 +45,6 @@ class GuruLogController extends Controller
 
         $logs = $query->paginate(15)->withQueryString();
 
-        return view('guru.log.index', compact('logs', 'search'));
+        return view('guru.log.index', compact('logs', 'search', 'scope'));
     }
 }

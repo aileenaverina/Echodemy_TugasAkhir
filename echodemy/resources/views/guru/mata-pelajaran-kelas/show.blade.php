@@ -164,15 +164,15 @@
                                                 d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                         </svg>
                                         <span class="text-sm">{{ $materi->nama }}</span>
+                                        @if ($materi->is_lock)
+                                            <span
+                                                class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber/60 text-hitam">Terkunci</span>
+                                        @endif
                                     </div>
-                                    <a href="#"
-                                        class="w-8 h-8 rounded-lg bg-amber/60 text-hitam flex items-center justify-center hover:bg-amber/70">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                                        </svg>
-                                    </a>
+                                    @if ($isPengajar)
+                                        <x-item-actions tipe="materi" :id="$materi->id" :nama="$materi->nama"
+                                            :locked="(bool) $materi->is_lock" :edit-url="route('guru.materi.edit', $materi)" />
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -192,21 +192,23 @@
                                                 d="M9 12h3.75M9 15h3.75M9 18h3.75M3.75 4.5h16.5M4.5 4.5v15a1.5 1.5 0 001.5 1.5h12a1.5 1.5 0 001.5-1.5v-15" />
                                         </svg>
                                         <div>
-                                            <p class="text-sm">{{ $assignment->judul }}</p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-sm">{{ $assignment->judul }}</p>
+                                                @if ($assignment->is_lock)
+                                                    <span
+                                                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber/60 text-hitam">Terkunci</span>
+                                                @endif
+                                            </div>
                                             @if ($assignment->batas_waktu)
                                                 <p class="text-xs text-hitam2">Batas:
                                                     {{ $assignment->batas_waktu->format('d M Y H:i') }}</p>
                                             @endif
                                         </div>
                                     </div>
-                                    <a href="{{ route('guru.assignment.show', $assignment) }}"
-                                        class="w-8 h-8 rounded-lg bg-amber/60 text-hitam flex items-center justify-center hover:bg-amber/70">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                                        </svg>
-                                    </a>
+                                    @if ($isPengajar)
+                                        <x-item-actions tipe="assignment" :id="$assignment->id" :nama="$assignment->judul"
+                                            :locked="(bool) $assignment->is_lock" :edit-url="route('guru.assignment.show', $assignment)" />
+                                    @endif
                                 </div>
                             @endforeach
 
@@ -229,14 +231,10 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <a href="{{ route('guru.latihan.show', $latihan) }}"
-                                        class="w-8 h-8 rounded-lg bg-amber/60 text-hitam flex items-center justify-center hover:bg-amber/70">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                                        </svg>
-                                    </a>
+                                    @if ($isPengajar)
+                                        <x-item-actions tipe="latihan" :id="$latihan->id" :nama="$latihan->judul"
+                                            :locked="(bool) $latihan->is_lock" :edit-url="route('guru.latihan.show', $latihan)" />
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -410,6 +408,43 @@
         @method('DELETE')
     </form>
 
+    <!-- Modal Share Item -->
+    <div id="share-item-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+        <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
+        <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-md p-6 my-auto">
+            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Share</p>
+            <h2 class="font-display font-semibold text-lg mb-4">Salin ke Section Lain</h2>
+
+            <form id="share-item-form" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Kelas Tujuan</label>
+                    <select id="share-item-mpk"
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Section Tujuan</label>
+                    <select name="target_bahan_ajar_id" id="share-item-section" required disabled
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></select>
+                </div>
+                <p class="text-xs text-hitam2">Item disalin dalam keadaan terkunci, bobot 0, dan tanpa batas waktu.
+                    Jawaban siswa tidak ikut disalin.</p>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button"
+                        class="modal-close-btn text-sm font-medium text-hitam2 px-4 py-2 hover:text-ink">Batal</button>
+                    <button type="submit" id="share-item-submit" disabled
+                        class="bg-ink text-cream text-sm font-medium rounded-lg px-4 py-2 hover:bg-hitam disabled:opacity-40 disabled:cursor-not-allowed">Salin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form id="delete-item-form" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <script>
         $(function() {
             // Accordion expand/collapse
@@ -518,6 +553,97 @@
                         bahanAjarId + '/share');
                     $('#share-section-modal').removeClass('hidden');
                 });
+            });
+
+            // kunci / buka kunci item
+            $('.lock-item-btn').on('click', function() {
+                $.post('{{ url('/guru/item') }}/' + $(this).data('tipe') + '/' + $(this).data('id') +
+                    '/toggle-lock', {
+                        _token: '{{ csrf_token() }}',
+                    }).done(function() {
+                    location.reload();
+                });
+            });
+
+            // hapus item
+            $('.delete-item-btn').on('click', function() {
+                const tipe = $(this).data('tipe'),
+                    id = $(this).data('id'),
+                    nama = $(this).data('nama');
+                const catatan = {
+                    latihan: ' Nilai kuis ini juga hilang dari rekap.',
+                    assignment: ' Hasil pengumpulan siswa tidak akan tampil lagi.',
+                    materi: '',
+                } [tipe];
+
+                Swal.fire({
+                    title: 'Hapus item ini?',
+                    text: nama + ' akan dihapus.' + catatan,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#E8674A',
+                    cancelButtonColor: '#5B5A55',
+                    confirmButtonText: 'Ya, hapus',
+                    cancelButtonText: 'Batal',
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        $('#delete-item-form').attr('action', '{{ url('/guru/item') }}/' + tipe +
+                            '/' + id).submit();
+                    }
+                });
+            });
+
+            // share item: pilih kelas tujuan lalu section tujuan
+            let shareTargets = [];
+
+            function isiSectionTujuan(mpkId) {
+                const $sec = $('#share-item-section').html('');
+                const mpk = shareTargets.find(t => String(t.id) === String(mpkId));
+
+                if (!mpk || mpk.sections.length === 0) {
+                    $sec.append('<option value="">Kelas ini belum punya section</option>').prop('disabled', true);
+                    $('#share-item-submit').prop('disabled', true);
+                    return;
+                }
+
+                mpk.sections.forEach(s => $sec.append($('<option>', {
+                    value: s.id,
+                    text: s.label
+                })));
+                $sec.prop('disabled', false);
+                $('#share-item-submit').prop('disabled', false);
+            }
+
+            $('.share-item-btn').on('click', function() {
+                const tipe = $(this).data('tipe'),
+                    id = $(this).data('id');
+
+                $.getJSON('{{ route('guru.share.targets') }}', {
+                    exclude: '{{ $mataPelajaranKelas->id }}'
+                }).done(function(targets) {
+                    shareTargets = targets;
+                    const $mpk = $('#share-item-mpk').html('');
+
+                    if (!targets.length) {
+                        $mpk.append('<option value="">Tidak ada kelas lain</option>');
+                        $('#share-item-section').html('').prop('disabled', true);
+                        $('#share-item-submit').prop('disabled', true);
+                    } else {
+                        targets.forEach(t => $mpk.append($('<option>', {
+                            value: t.id,
+                            text: t.label
+                        })));
+                        isiSectionTujuan(targets[0].id);
+                    }
+
+                    $('#share-item-form').attr('action', '{{ url('/guru/item') }}/' + tipe + '/' +
+                        id + '/share');
+                    $('#share-item-modal').removeClass('hidden');
+                });
+            });
+
+            $('#share-item-mpk').on('change', function() {
+                isiSectionTujuan($(this).val());
             });
         });
     </script>

@@ -51,7 +51,7 @@
             <tbody>
                 @forelse ($submissions as $item)
                     @php
-                        $nilai = $item['terakhir']->answers->sum('nilai');
+                       $nilai = $item['terakhir']->nilai_akhir ?? $item['terakhir']->answers->sum('nilai');
                     @endphp
                     <tr class="border-b border-border last:border-0">
                         <td class="px-5 py-4 font-medium">{{ $item['siswa']->nama_lengkap }}</td>

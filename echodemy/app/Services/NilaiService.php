@@ -82,11 +82,10 @@ class NilaiService
 
         foreach ($bahanAjars as $ba) {
             foreach ($ba->latihans as $l) {
-                $items->push($this->item($ba, $l->judul, 'latihan', $l->kategori, $l->persen_nilai_akhir, $this->nilaiLatihan($l, $userId)));
+                $items->push($this->item($ba, $l->judul, 'latihan', $l->kategori, $l->persen_nilai_akhir, $this->nilaiLatihan($l, $userId)) + ['key' => 'l' . $l->id]);
             }
             foreach ($ba->assignments as $a) {
-                //$items->push($this->item($ba, $a->judul, 'assignment', 'harian', $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)));
-                $items->push($this->item($ba, $a->judul, 'assignment', $a->kategori, $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)));
+                $items->push($this->item($ba, $a->judul, 'assignment', $a->kategori, $a->persen_nilai_akhir, $this->nilaiAssignment($a, $userId)) + ['key' => 'a' . $a->id]);
             }
         }
 
@@ -140,13 +139,15 @@ class NilaiService
         $siswaList = $mpk->kelas->siswa;
         $rekapSiswa = $siswaList->map(fn($s) => $this->rekapMapel($mpk, $s->id, $semester));
 
-        $template = $rekapSiswa->first()['items'] ?? collect();
+        $items = ($rekapSiswa->first()['items'] ?? collect())
+            ->where('bobot', '>', 0)
+            ->map(function ($item) use ($rekapSiswa) {
+                $nilai = $rekapSiswa
+                    ->map(fn($r) => data_get($r['items']->firstWhere('key', $item['key']), 'nilai'))
+                    ->filter(fn($n) => $n !== null);
 
-        $items = $template->where('bobot', '>', 0)->map(function ($item, $i) use ($rekapSiswa) {
-            $nilai = $rekapSiswa->map(fn($r) => $r['items'][$i]['nilai'] ?? null)->filter(fn($n) => $n !== null);
-
-            return $item + ['rata' => $nilai->isNotEmpty() ? round($nilai->avg(), 1) : null];
-        })->values();
+                return $item + ['rata' => $nilai->isNotEmpty() ? round($nilai->avg(), 1) : null, 'terisi' => $nilai->count()];
+            })->values();
 
         $lengkap = $rekapSiswa->where('lengkap', true);
 

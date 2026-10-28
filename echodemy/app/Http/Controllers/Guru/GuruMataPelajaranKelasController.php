@@ -142,52 +142,14 @@ class GuruMataPelajaranKelasController extends Controller
         return back()->with('success', 'Status kunci section diperbarui.');
     }
 
-    public function rekapNilai(MataPelajaranKelas $mataPelajaranKelas)
+    public function rekapNilai(Request $request, MataPelajaranKelas $mataPelajaranKelas, NilaiService $nilai)
     {
         $this->authorizePengajarAtauWali($mataPelajaranKelas);
 
-        $mataPelajaranKelas->load(['kelas', 'mataPelajaran', 'gurus']);
-        $jumlahSiswa = $mataPelajaranKelas->kelas->siswa()->count();
+        $mataPelajaranKelas->load(['kelas.siswa', 'mataPelajaran', 'gurus']);
+        $semester = (int) $request->input('semester', 1);
+        $rekap = $nilai->rekapKelas($mataPelajaranKelas, $semester);
 
-        $bahanAjars = $mataPelajaranKelas->bahanAjars()->with(['latihans.submissions.answers', 'assignments.hasilAssignments'])->get();
-
-        $items = collect();
-
-        foreach ($bahanAjars as $bahanAjar) {
-            foreach ($bahanAjar->latihans as $latihan) {
-                $nilaiPerSiswa = $latihan->submissions
-                    ->groupBy('user_id')
-                    ->map(fn($subs) => $subs->sortByDesc('created_at')->first()->answers->sum('nilai'));
-
-                $rata = $nilaiPerSiswa->isNotEmpty() ? round($nilaiPerSiswa->avg(), 1) : null;
-
-                $items->push([
-                    'nama' => $latihan->judul,
-                    'section' => $bahanAjar->judul,
-                    'nilai' => $rata,
-                    'bobot' => $latihan->persen_nilai_akhir,
-                ]);
-            }
-
-            foreach ($bahanAjar->assignments as $assignment) {
-                $nilaiTerisi = $assignment->hasilAssignments->pluck('nilai')->filter(fn($n) => $n !== null);
-                $rata = $nilaiTerisi->isNotEmpty() ? round($nilaiTerisi->avg(), 1) : null;
-
-                $items->push([
-                    'nama' => $assignment->judul,
-                    'section' => $bahanAjar->judul,
-                    'nilai' => $rata,
-                    'bobot' => $assignment->persen_nilai_akhir,
-                ]);
-            }
-        }
-
-        $itemDenganNilai = $items->filter(fn($i) => $i['nilai'] !== null && $i['bobot']);
-        $totalBobot = $itemDenganNilai->sum('bobot');
-        $hasilAkhir = $totalBobot > 0
-            ? round($itemDenganNilai->sum(fn($i) => $i['nilai'] * $i['bobot']) / $totalBobot, 1)
-            : null;
-
-        return view('guru.mata-pelajaran-kelas.rekap', compact('mataPelajaranKelas', 'jumlahSiswa', 'items', 'hasilAkhir'));
+        return view('guru.mata-pelajaran-kelas.rekap', compact('mataPelajaranKelas', 'rekap', 'semester'));
     }
 }

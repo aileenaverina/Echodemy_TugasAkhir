@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SekolahVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guru\GuruAssignmentController;
 use App\Http\Controllers\Guru\GuruBobotController;
+use App\Http\Controllers\Guru\GuruItemController;
 use App\Http\Controllers\Guru\GuruKelasController;
 use App\Http\Controllers\Guru\GuruKelasMataPelajaranController;
 use App\Http\Controllers\Guru\GuruKelasSiswaController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Guru\GuruKoreksiController;
 use App\Http\Controllers\Guru\GuruLatihanController;
 use App\Http\Controllers\Guru\GuruLogController;
 use App\Http\Controllers\Guru\GuruMataPelajaranKelasController;
+use App\Http\Controllers\Guru\GuruMateriController;
 use App\Http\Controllers\Guru\GuruRaporController;
 use App\Http\Controllers\Guru\GuruSectionController;
 use App\Http\Controllers\Guru\GuruShareBahanAjarController;
@@ -141,6 +143,18 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::post('/section/{bahanAjar}/materi', [GuruSectionController::class, 'storeMateri'])->name('section.materi.store');
     Route::post('/section/{bahanAjar}/assignment', [GuruSectionController::class, 'storeAssignment'])->name('section.assignment.store');
     Route::post('/section/{bahanAjar}/latihan', [GuruSectionController::class, 'storeLatihan'])->name('section.latihan.store');
+
+    Route::prefix('/item/{tipe}/{id}')
+        ->whereIn('tipe', ['materi', 'assignment', 'latihan'])
+        ->whereNumber('id')
+        ->group(function () {
+            Route::post('/toggle-lock', [GuruItemController::class, 'toggleLock'])->name('item.toggle-lock');
+            Route::post('/share', [GuruItemController::class, 'share'])->name('item.share');
+            Route::delete('/', [GuruItemController::class, 'destroy'])->name('item.destroy');
+        });
+
+    Route::get('/materi/{materi}/edit', [GuruMateriController::class, 'edit'])->name('materi.edit');
+    Route::put('/materi/{materi}', [GuruMateriController::class, 'update'])->name('materi.update');
 
     Route::get('/latihan/{latihan}', [GuruLatihanController::class, 'show'])->name('latihan.show');
     Route::get('/latihan/{latihan}/soal', [GuruLatihanController::class, 'soal'])->name('latihan.soal');
