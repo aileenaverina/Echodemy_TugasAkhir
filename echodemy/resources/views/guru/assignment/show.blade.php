@@ -21,6 +21,10 @@
             <p class="text-[11px] font-semibold tracking-widest uppercase text-hitam2 mb-1">Batas Waktu</p>
             <p class="font-medium">{{ $assignment->batas_waktu?->format('d M Y H:i') ?? '-' }}</p>
         </div>
+        <button type="button" id="edit-pengaturan-btn"
+            class="bg-cream2 text-ink text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-border">
+            Edit Pengaturan
+        </button>
     </div>
 
     <div class="bg-putih rounded-2xl shadow-sm overflow-hidden">
@@ -123,16 +127,90 @@
         </div>
     </div>
 
+    <!-- Modal Edit Pengaturan Tugas -->
+    <div id="edit-pengaturan-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+        <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
+        <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-lg p-6 my-auto">
+            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Edit</p>
+            <h2 class="font-display font-semibold text-lg mb-4">Pengaturan Tugas</h2>
+
+            <form method="POST" action="{{ route('guru.assignment.pengaturan.update', $assignment) }}"
+                class="space-y-4">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Judul</label>
+                    <input type="text" name="judul" value="{{ $assignment->judul }}" required
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Kategori</label>
+                        <select name="kategori"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            @foreach (['harian' => 'Harian', 'tengah_semester' => 'Tengah Semester', 'akhir_semester' => 'Akhir Semester'] as $val => $label)
+                                <option value="{{ $val }}"
+                                    {{ $assignment->kategori === $val ? 'selected' : '' }}>{{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Tipe Pengumpulan</label>
+                        <select name="tipe_pengumpulan"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            <option value="file" {{ $assignment->tipe_pengumpulan === 'file' ? 'selected' : '' }}>
+                                File</option>
+                            <option value="text" {{ $assignment->tipe_pengumpulan === 'text' ? 'selected' : '' }}>
+                                Teks</option>
+                            <option value="keduanya"
+                                {{ $assignment->tipe_pengumpulan === 'keduanya' ? 'selected' : '' }}>Keduanya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Batas Waktu</label>
+                        <input type="datetime-local" name="batas_waktu"
+                            value="{{ $assignment->batas_waktu?->format('Y-m-d\TH:i') }}"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Bobot (%)</label>
+                        <input type="number" name="persen_nilai_akhir"
+                            value="{{ $assignment->persen_nilai_akhir ?? 0 }}" min="0" max="100"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button"
+                        class="modal-close-btn text-sm font-medium text-hitam2 px-4 py-2 hover:text-ink">Batal</button>
+                    <button type="submit"
+                        class="bg-ink text-cream text-sm font-medium rounded-lg px-4 py-2 hover:bg-hitam">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         $(function() {
             $('.mark-nilai-btn').on('click', function() {
                 $('#nilai-input').val($(this).data('nilai'));
                 $('#nilai-form').attr('action',
                     '{{ url('/guru/assignment/' . $assignment->id . '/hasil') }}/' + $(this).data('id')
-                    );
+                );
                 $('#nilai-modal').removeClass('hidden');
             });
 
+            $('.modal-close-btn, .modal-overlay').on('click', function() {
+                $(this).closest('[id$="-modal"]').addClass('hidden');
+            });
+
+            $('#edit-pengaturan-btn').on('click', function() {
+                $('#edit-pengaturan-modal').removeClass('hidden');
+            });
             $('.modal-close-btn, .modal-overlay').on('click', function() {
                 $(this).closest('[id$="-modal"]').addClass('hidden');
             });

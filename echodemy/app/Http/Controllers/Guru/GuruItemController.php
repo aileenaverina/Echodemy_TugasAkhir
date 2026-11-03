@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\BahanAjar;
 use App\Models\Latihan;
 use App\Models\Materi;
+use App\Models\Notif;
 use App\Services\SalinKontenService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +19,24 @@ class GuruItemController extends Controller
     public function toggleLock(string $tipe, int $id): JsonResponse
     {
         $item = $this->cariItem($tipe, $id);
+        $wasLocked = $item->is_lock;
+
         $item->update(['is_lock' => ! $item->is_lock]);
+
+        // Kirim notif ke siswa hanya saat di-unlock (bukan saat dikunci)
+        if ($wasLocked && ! $item->is_lock) {
+            $nama = $tipe === 'materi' ? $item->nama : $item->judul;
+            $kelas = $item->bahanAjar->mataPelajaranKelas->kelas;
+
+            $kelas->siswa->each(function ($siswa) use ($nama) {
+                Notif::create([
+                    'judul'     => 'MATERI BARU TERSEDIA',
+                    'deskripsi' => "{$nama} sudah bisa diakses.",
+                    'is_read'   => false,
+                    'user_id'   => $siswa->id,
+                ]);
+            });
+        }
 
         return response()->json(['is_lock' => (bool) $item->is_lock]);
     }
@@ -44,7 +62,7 @@ class GuruItemController extends Controller
         $target = BahanAjar::with('mataPelajaranKelas.gurus')->findOrFail($validated['target_bahan_ajar_id']);
         abort_unless($target->mataPelajaranKelas->gurus->pluck('id')->contains(auth()->id()), 403);
 
-        DB::transaction(fn () => $salin->salinItem($item, $target));
+        DB::transaction(fn() => $salin->salinItem($item, $target));
 
         return back()->with('success', 'Berhasil disalin ke section tujuan. Salinannya terkunci dan bobotnya 0.');
     }

@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\HasilAssignment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class GuruAssignmentController extends Controller
@@ -40,6 +41,35 @@ class GuruAssignmentController extends Controller
         ]);
 
         return back()->with('success', 'Nilai berhasil disimpan.');
+    }
+
+    public function updatePengaturan(Request $request, Assignment $assignment): RedirectResponse
+    {
+        $this->authorizeAssignment($assignment);
+
+        $validated = $request->validate([
+            'judul'             => ['required', 'string', 'max:255'],
+            'kategori'          => ['required', 'in:harian,tengah_semester,akhir_semester'],
+            'tipe_pengumpulan'  => ['required', 'in:file,text,keduanya'],
+            'batas_waktu'       => ['nullable', 'date'],
+            'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        if ((int) ($validated['persen_nilai_akhir'] ?? 0) > 0 && empty($validated['batas_waktu'])) {
+            throw ValidationException::withMessages([
+                'batas_waktu' => 'Batas waktu wajib diisi untuk tugas yang masuk penilaian.',
+            ]);
+        }
+
+        $assignment->update([
+            'judul'             => $validated['judul'],
+            'kategori'          => $validated['kategori'],
+            'tipe_pengumpulan'  => $validated['tipe_pengumpulan'],
+            'batas_waktu'       => $validated['batas_waktu'] ?? null,
+            'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? 0,
+        ]);
+
+        return back()->with('success', 'Pengaturan tugas berhasil diperbarui.');
     }
 
     protected function authorizeAssignment(Assignment $assignment): void

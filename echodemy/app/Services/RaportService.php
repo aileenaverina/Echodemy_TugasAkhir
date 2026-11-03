@@ -33,12 +33,17 @@ class RaportService
         $mapel = $mpkList->map(function ($mpk) use ($siswa, $semester, &$alasan) {
             $rekap = $this->nilai->rekapMapel($mpk, $siswa->id, $semester);
 
+            // Skip mapel yang total bobotnya 0 — tidak masuk raport
+            if ($rekap['total_bobot'] === 0) {
+                return null;
+            }
+
             foreach ($rekap['alasan'] as $a) {
                 $alasan[] = $mpk->mataPelajaran->nama . ': ' . $a;
             }
 
             return ['nama' => $mpk->mataPelajaran->nama, 'rekap' => $rekap];
-        });
+        })->filter()->values();
 
         return ['lengkap' => empty($alasan), 'alasan' => $alasan, 'mapel' => $mapel];
     }

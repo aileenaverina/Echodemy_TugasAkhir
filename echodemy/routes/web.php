@@ -161,7 +161,11 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::put('/latihan/{latihan}/submission/{submission}', [GuruLatihanController::class, 'updateNilai'])->name('latihan.submission.update');
     Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('guru.koreksi.update');
     Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('guru.koreksi.show');
-
+    Route::put('/latihan/{latihan}/pengaturan', [GuruLatihanController::class, 'updatePengaturan'])->name('latihan.pengaturan.update');
+    Route::get('/latihan/{latihan}/edit-soal', [GuruLatihanController::class, 'editSoal'])->name('latihan.edit-soal');
+    Route::put('/latihan/{latihan}/edit-soal', [GuruLatihanController::class, 'updateSoal'])->name('latihan.soal.update');
+    
+    Route::put('/assignment/{assignment}/pengaturan', [GuruAssignmentController::class, 'updatePengaturan'])->name('assignment.pengaturan.update');
     Route::get('/assignment/{assignment}', [GuruAssignmentController::class, 'show'])->name('assignment.show');
 
     Route::get('/rapor', [GuruRaporController::class, 'index'])->name('rapor.index');
