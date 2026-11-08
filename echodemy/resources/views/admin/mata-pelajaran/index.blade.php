@@ -290,6 +290,15 @@
                     }
                 });
             });
+
+             @if ($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal menyimpan',
+                    html: {!! json_encode(implode('<br>', array_map('e', $errors->all()))) !!},
+                    confirmButtonColor: '#E8674A'
+                });
+            @endif
         });
     </script>
 </x-app-layout>

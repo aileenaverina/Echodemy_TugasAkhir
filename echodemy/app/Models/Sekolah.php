@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sekolah extends Model
 {
+    use SoftDeletes;
     const STATUS_PENDING = 'pending';
     const STATUS_VERIFIED = 'verified';
     const STATUS_REJECTED = 'rejected';

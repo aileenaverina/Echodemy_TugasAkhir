@@ -19,8 +19,8 @@ class AdminAkunController extends Controller
         $riwayat = Log::whereNotNull('sekolah_id')
             ->where(function ($q) {
                 $q->where('deskripsi', 'like', 'Memverifikasi%')
-                  ->orWhere('deskripsi', 'like', 'Menolak%')
-                  ->orWhere('deskripsi', 'like', 'Menonaktifkan%');
+                    ->orWhere('deskripsi', 'like', 'Menolak%')
+                    ->orWhere('deskripsi', 'like', 'Menonaktifkan%');
             })
             ->with(['user', 'sekolah'])
             ->latest()
@@ -48,7 +48,7 @@ class AdminAkunController extends Controller
             'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $nextNumber = User::where('role', UserRole::Admin)->count() + 1;
+        $nextNumber = User::withTrashed()->where('role', UserRole::Admin)->count() + 1;
 
         User::create([
             'role' => UserRole::Admin,
@@ -67,8 +67,11 @@ class AdminAkunController extends Controller
             return back()->with('error', 'Kamu tidak bisa menghapus akunmu sendiri.');
         }
 
+        $nama = $akun->nama_lengkap;
+
+        $akun->update(['email' => null]);
         $akun->delete();
 
-        return back()->with('success', "Akun {$akun->nama_lengkap} berhasil dihapus.");
+        return back()->with('success', "Akun {$nama} berhasil dihapus.");
     }
 }

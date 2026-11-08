@@ -38,7 +38,7 @@ class GuruAccountCreatedMail extends Mailable
      */
     public function content(): Content
     {
-         return new Content(view: 'emails.guru-account-created');
+         return new Content(markdown: 'emails.guru-account-created');
     }
 
     /**

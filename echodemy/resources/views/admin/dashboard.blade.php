@@ -35,7 +35,7 @@
                 <img src="{{ asset('images/users.svg') }}" alt="users" class="w-5 h-5">
             </div>
             <p class="text-3xl font-display font-semibold">{{ number_format($stats['total_pengguna']) }}</p>
-            <p class="text-sm text-cream3 mt-1 font-semibold">Total Pengguna</p>
+            <p class="text-sm text-cream3 mt-1">Total Pengguna</p>
         </div>
     </div>
 

@@ -39,7 +39,7 @@ class SekolahApprovedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.sekolah-approved',
+            markdown: 'emails.sekolah-approved',
         );
     }
 

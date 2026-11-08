@@ -7,6 +7,7 @@ use App\Models\MataPelajaran;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class AdminMataPelajaranController extends Controller
 {
@@ -39,7 +40,7 @@ class AdminMataPelajaranController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'nama' => ['required', 'string', 'max:255', 'unique:mata_pelajarans,nama'],
+            'nama' => ['required', 'string', 'max:255', Rule::unique('mata_pelajarans', 'nama')->whereNull('deleted_at')],
             'warna' => ['required', 'string', 'max:45'],
             'file' => ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
         ]);
@@ -58,7 +59,7 @@ class AdminMataPelajaranController extends Controller
     public function update(Request $request, MataPelajaran $mataPelajaran): RedirectResponse
     {
         $request->validate([
-            'nama' => ['required', 'string', 'max:255', 'unique:mata_pelajarans,nama,' . $mataPelajaran->id],
+            'nama' => ['required', 'string', 'max:255', Rule::unique('mata_pelajarans', 'nama')->ignore($mataPelajaran->id)->whereNull('deleted_at')],
             'warna' => ['required', 'string', 'max:45'],
             'file' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
         ]);

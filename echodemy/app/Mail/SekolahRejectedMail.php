@@ -40,7 +40,7 @@ class SekolahRejectedMail extends Mailable
      */
     public function content(): Content
     {
-        return new Content(view: 'emails.sekolah-rejected');
+        return new Content(markdown: 'emails.sekolah-rejected');
     }
 
     /**

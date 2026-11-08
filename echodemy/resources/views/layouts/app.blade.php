@@ -69,6 +69,28 @@
     </div>
 
     <script>
+        @if ($errors->any())
+            $(function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal menyimpan',
+                    html: {!! json_encode(implode('<br>', array_map('e', $errors->all()))) !!},
+                    confirmButtonColor: '#E8674A'
+                });
+            });
+        @endif
+
+        @if (session('error'))
+
+            $(function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: @json(session('error')),
+                    confirmButtonColor: '#E8674A'
+                });
+            });
+        @endif
         $(function() {
             $('#sidebar-open-btn').on('click', function() {
                 $('#sidebar').removeClass('-translate-x-full');
