@@ -139,4 +139,32 @@ class User extends Authenticatable
             ->where('kode_user', 'S' . substr($this->kode_user, 1))
             ->first();
     }
+
+    public function kelasSebagaiWali()
+    {
+        return $this->belongsToMany(
+            Kelas::class,
+            'anggota_kelas',
+            'user_id',
+            'kelas_id'
+        );
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if (! $user->isForceDeleting()) {
+                $user->detailUser?->delete();
+
+                if ($user->email) {
+                    $user->email = 'deleted_' . $user->id . '_' . $user->email;
+                    $user->saveQuietly();
+                }
+            }
+        });
+
+        static::restoring(function (User $user) {
+            $user->detailUser()->withTrashed()->first()?->restore();
+        });
+    }
 }

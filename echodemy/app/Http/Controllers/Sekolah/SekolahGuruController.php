@@ -28,7 +28,7 @@ class SekolahGuruController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -67,7 +67,8 @@ class SekolahGuruController extends Controller
             'status' => 'aktif',
         ]);
 
-        $nomorUrut = User::where('sekolah_id', $sekolah->id)
+        $nomorUrut = User::withTrashed()
+            ->where('sekolah_id', $sekolah->id)
             ->where('role', UserRole::Guru)
             ->where('kode_user', 'like', 'T' . $sekolah->singkatan . $tahunPendek . '%')
             ->count() + 1;

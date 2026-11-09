@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -28,8 +29,8 @@ class SekolahSiswaController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhereHas('detailUser', fn ($q2) => $q2->where('nis', 'like', "%{$search}%"));
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('detailUser', fn($q2) => $q2->where('nis', 'like', "%{$search}%"));
             });
         }
 
@@ -68,7 +69,8 @@ class SekolahSiswaController extends Controller
         $tahunPendek = substr($validated['tahun_masuk'], -2);
 
         DB::transaction(function () use ($validated, $sekolah, $tahunPendek) {
-            $nomorUrut = User::where('sekolah_id', $sekolah->id)
+            $nomorUrut = User::withTrashed()
+                ->where('sekolah_id', $sekolah->id)
                 ->where('role', UserRole::Siswa)
                 ->where('kode_user', 'like', 'S' . $sekolah->singkatan . $tahunPendek . '%')
                 ->count() + 1;
