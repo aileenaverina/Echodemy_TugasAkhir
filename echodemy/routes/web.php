@@ -96,6 +96,7 @@ Route::middleware(['auth', 'role:sekolah'])->prefix('sekolah')->name('sekolah.')
     Route::post('/kelas', [SekolahKelasController::class, 'store'])->name('kelas.store');
     Route::put('/kelas/{kelas}', [SekolahKelasController::class, 'update'])->name('kelas.update');
     Route::delete('/kelas/{kelas}', [SekolahKelasController::class, 'destroy'])->name('kelas.destroy');
+    Route::post('/kelas/{kelas}/selesai', [SekolahKelasController::class, 'selesai'])->name('kelas.selesai');
 
     Route::get('/guru', [SekolahGuruController::class, 'index'])->name('guru.index');
     Route::get('/guru/{guru}', [SekolahGuruController::class, 'show'])->name('guru.show');

@@ -9,6 +9,7 @@ use App\Models\DetailUser;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -62,30 +63,40 @@ class SekolahGuruController extends Controller
         $tahunPendek = substr($validated['tahun_masuk'], -2);
         $plainPassword = Str::password(10);
 
-        $detailUser = DetailUser::create([
-            'nomor_telepon' => $validated['nomor_telepon'] ?? null,
-            'status' => 'aktif',
-        ]);
+        $guru = DB::transaction(function () use ($validated, $sekolah, $tahunPendek, $plainPassword) {
+            $detailUser = DetailUser::create([
+                'nomor_telepon' => $validated['nomor_telepon'] ?? null,
+                'status' => 'aktif',
+            ]);
 
-        $nomorUrut = User::withTrashed()
-            ->where('sekolah_id', $sekolah->id)
-            ->where('role', UserRole::Guru)
-            ->where('kode_user', 'like', 'T' . $sekolah->singkatan . $tahunPendek . '%')
-            ->count() + 1;
+            $nomorUrut = User::withTrashed()
+                ->where('sekolah_id', $sekolah->id)
+                ->where('role', UserRole::Guru)
+                ->where('kode_user', 'like', 'T' . $sekolah->singkatan . $tahunPendek . '%')
+                ->count() + 1;
 
-        $kodeUser = 'T' . $sekolah->singkatan . $tahunPendek . str_pad($nomorUrut, 4, '0', STR_PAD_LEFT);
+            $kodeUser = 'T' . $sekolah->singkatan . $tahunPendek . str_pad($nomorUrut, 4, '0', STR_PAD_LEFT);
 
-        $guru = User::create([
-            'role' => UserRole::Guru,
-            'nama_lengkap' => $validated['nama_lengkap'],
-            'kode_user' => $kodeUser,
-            'email' => $validated['email'],
-            'password' => Hash::make($plainPassword),
-            'sekolah_id' => $sekolah->id,
-            'detail_user_id' => $detailUser->id,
-        ]);
+            $guru = User::create([
+                'role' => UserRole::Guru,
+                'nama_lengkap' => $validated['nama_lengkap'],
+                'kode_user' => $kodeUser,
+                'email' => $validated['email'],
+                'password' => Hash::make($plainPassword),
+                'sekolah_id' => $sekolah->id,
+                'detail_user_id' => $detailUser->id,
+            ]);
 
-        Mail::to($guru->email)->send(new GuruAccountCreatedMail($guru, $plainPassword));
+            return $guru;
+        });
+
+        try {
+            Mail::to($guru->email)->send(new GuruAccountCreatedMail($guru, $plainPassword));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', "Akun guru {$guru->nama_lengkap} dibuat, tetapi email gagal terkirim. Hubungi guru secara langsung atau reset passwordnya.");
+        }
 
         return back()->with('success', 'Akun guru berhasil dibuat dan email terkirim.');
     }
@@ -101,17 +112,17 @@ class SekolahGuruController extends Controller
             'status' => ['required', 'in:aktif,nonaktif'],
         ]);
 
-        $guru->update([
-            'nama_lengkap' => $validated['nama_lengkap'],
-            'email' => $validated['email'],
-        ]);
+        DB::transaction(function () use ($guru, $validated) {
+            $guru->update([
+                'nama_lengkap' => $validated['nama_lengkap'],
+                'email' => $validated['email'],
+            ]);
 
-        if ($guru->detailUser) {
-            $guru->detailUser->update([
+            $guru->detailUser?->update([
                 'nomor_telepon' => $validated['nomor_telepon'] ?? null,
                 'status' => $validated['status'],
             ]);
-        }
+        });
 
         return back()->with('success', 'Data guru berhasil diperbarui.');
     }
@@ -119,6 +130,14 @@ class SekolahGuruController extends Controller
     public function destroy(User $guru): RedirectResponse
     {
         $this->authorizeGuru($guru);
+
+        if ($guru->kelasSebagaiWali()->exists()) {
+            return back()->with('error', "{$guru->nama_lengkap} masih menjadi wali kelas. Ganti wali kelasnya dulu.");
+        }
+
+        if ($guru->mataPelajaranKelasDiajar()->exists()) {
+            return back()->with('error', "{$guru->nama_lengkap} masih mengajar mata pelajaran di kelas. Lepas penugasannya dulu.");
+        }
 
         $guru->delete();
 

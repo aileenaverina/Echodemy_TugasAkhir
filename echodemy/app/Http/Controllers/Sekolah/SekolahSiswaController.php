@@ -50,6 +50,8 @@ class SekolahSiswaController extends Controller
             'nis' => $siswa->detailUser?->nis,
             'kelas_id' => $siswa->kelas->first()?->id,
             'status' => $siswa->detailUser?->status ?? 'aktif',
+            'nama_ortu' => $siswa->detailUser?->nama_ortu,
+            'nomor_telepon_ortu_wali' => $siswa->detailUser?->nomor_telepon_ortu_wali,
         ]);
     }
 
@@ -59,7 +61,9 @@ class SekolahSiswaController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'nis' => ['required', 'string', 'max:45'],
-            'kelas_id' => ['required', 'exists:kelass,id'],
+            'kelas_id' => ['required', Rule::exists('kelass', 'id')
+                ->where('sekolah_id', auth()->user()->sekolah_id)
+                ->whereNull('deleted_at')],
             'tahun_masuk' => ['required', 'digits:4'],
             'nama_ortu' => ['nullable', 'string', 'max:45'],
             'nomor_telepon_ortu_wali' => ['nullable', 'string', 'max:45'],
@@ -117,21 +121,29 @@ class SekolahSiswaController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($siswa->id)],
             'nis' => ['required', 'string', 'max:45'],
-            'kelas_id' => ['required', 'exists:kelass,id'],
+            'kelas_id' => ['required', Rule::exists('kelass', 'id')
+                ->where('sekolah_id', auth()->user()->sekolah_id)
+                ->whereNull('deleted_at')],
             'status' => ['required', 'in:aktif,nonaktif,lulus,keluar'],
+            'nama_ortu' => ['nullable', 'string', 'max:45'],
+            'nomor_telepon_ortu_wali' => ['nullable', 'string', 'max:45'],
         ]);
 
-        $siswa->update([
-            'nama_lengkap' => $validated['nama_lengkap'],
-            'email' => $validated['email'],
-        ]);
+        DB::transaction(function () use ($siswa, $validated) {
+            $siswa->update([
+                'nama_lengkap' => $validated['nama_lengkap'],
+                'email' => $validated['email'],
+            ]);
 
-        $siswa->detailUser?->update([
-            'nis' => $validated['nis'],
-            'status' => $validated['status'],
-        ]);
+            $siswa->detailUser?->update([
+                'nis' => $validated['nis'],
+                'status' => $validated['status'],
+                'nama_ortu' => $validated['nama_ortu'] ?? null,
+                'nomor_telepon_ortu_wali' => $validated['nomor_telepon_ortu_wali'] ?? null,
+            ]);
 
-        $siswa->kelas()->sync([$validated['kelas_id']]);
+            $siswa->kelas()->sync([$validated['kelas_id']]);
+        });
 
         return back()->with('success', 'Data siswa berhasil diperbarui.');
     }
@@ -140,8 +152,10 @@ class SekolahSiswaController extends Controller
     {
         $this->authorizeSiswa($siswa);
 
-        $this->findOrtu($siswa)?->delete();
-        $siswa->delete();
+        DB::transaction(function () use ($siswa) {
+            $this->findOrtu($siswa)?->delete();
+            $siswa->delete();
+        });
 
         return back()->with('success', "Akun siswa {$siswa->nama_lengkap} berhasil dihapus.");
     }

@@ -124,7 +124,10 @@ class User extends Authenticatable
         return match ($this->role?->value) {
             'admin' => $this->kode_user,
             'sekolah' => $this->sekolah?->nama ?? $this->nama_lengkap,
-            default => $this->nama_lengkap,
+            'orang_tua' => $this->anak()?->detailUser?->nama_ortu
+                ?? $this->nama_lengkap
+                ?? $this->kode_user,
+            default => $this->nama_lengkap ?? $this->kode_user,
         };
     }
 

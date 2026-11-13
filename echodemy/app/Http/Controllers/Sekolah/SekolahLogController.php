@@ -13,11 +13,10 @@ class SekolahLogController extends Controller
         $filter = $request->input('filter', 'semua');
         $search = $request->input('search');
 
-        //$query = Log::with('user')->latest();
+        $sekolahId = auth()->user()->sekolah_id;
+
         $query = Log::with('user')
-            ->whereHas('user', function ($q) {
-                $q->whereIn('role', ['guru', 'siswa']);
-            })
+            ->whereHas('user', fn($q) => $q->where('sekolah_id', $sekolahId)->whereIn('role', ['guru', 'siswa']))
             ->latest();
 
         if ($search) {
@@ -38,11 +37,11 @@ class SekolahLogController extends Controller
         $logs = $query->paginate(15)->withQueryString();
 
         $counts = [
-             'semua' => Log::whereHas('user', fn($q) => $q->whereIn('role', ['guru', 'siswa']))->count(),
             // 'admin' => Log::whereHas('user', fn($q) => $q->where('role', 'admin'))->count(),
             // 'sekolah' => Log::whereHas('user', fn($q) => $q->where('role', 'sekolah'))->count(),
-            'guru' => Log::whereHas('user', fn($q) => $q->where('role', 'guru'))->count(),
-            'siswa' => Log::whereHas('user', fn($q) => $q->where('role', 'siswa'))->count(),
+            'semua' => Log::whereHas('user', fn($q) => $q->where('sekolah_id', $sekolahId)->whereIn('role', ['guru', 'siswa']))->count(),
+            'guru'  => Log::whereHas('user', fn($q) => $q->where('sekolah_id', $sekolahId)->where('role', 'guru'))->count(),
+            'siswa' => Log::whereHas('user', fn($q) => $q->where('sekolah_id', $sekolahId)->where('role', 'siswa'))->count(),
         ];
 
         return view('sekolah.log.index', compact('logs', 'counts', 'filter', 'search'));

@@ -10,10 +10,11 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class SekolahKelasController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
         $search = $request->input('search');
@@ -21,13 +22,13 @@ class SekolahKelasController extends Controller
 
         $query = Kelas::where('sekolah_id', $sekolahId)
             ->with(['waliKelas', 'penugasanMataPelajaran.mataPelajaran'])
-            ->withCount('users as jumlah_siswa')
+            ->withCount(['users as jumlah_siswa' => fn($q) => $q->where('role', 'siswa')])
             ->where('status', $filter);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhereHas('waliKelas', fn ($q2) => $q2->where('nama_lengkap', 'like', "%{$search}%"));
+                    ->orWhereHas('waliKelas', fn($q2) => $q2->where('nama_lengkap', 'like', "%{$search}%"));
             });
         }
 
@@ -57,15 +58,17 @@ class SekolahKelasController extends Controller
     {
         $validated = $this->validateRequest($request);
 
-        $kelas = Kelas::create([
-            'nama' => $validated['nama'],
-            'sekolah_id' => auth()->user()->sekolah_id,
-            'tahun_ajaran' => $validated['tahun_ajaran'],
-            'status' => 'aktif',
-        ]);
+        DB::transaction(function () use ($validated) {
+            $kelas = Kelas::create([
+                'nama' => $validated['nama'],
+                'sekolah_id' => auth()->user()->sekolah_id,
+                'tahun_ajaran' => $validated['tahun_ajaran'],
+                'status' => 'aktif',
+            ]);
 
-        $kelas->users()->attach($validated['wali_kelas_id']);
-        $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
+            $kelas->users()->attach($validated['wali_kelas_id']);
+            $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
+        });
 
         return back()->with('success', 'Kelas berhasil ditambahkan.');
     }
@@ -76,19 +79,24 @@ class SekolahKelasController extends Controller
 
         $validated = $this->validateRequest($request);
 
-        $kelas->update([
-            'nama' => $validated['nama'],
-            'tahun_ajaran' => $validated['tahun_ajaran'],
-        ]);
+        DB::transaction(function () use ($kelas, $validated) {
+            $kelas->update([
+                'nama' => $validated['nama'],
+                'tahun_ajaran' => $validated['tahun_ajaran'],
+            ]);
 
-        DB::table('anggota_kelas')
-            ->where('kelas_id', $kelas->id)
-            ->whereIn('user_id', User::where('role', 'guru')->pluck('id'))
-            ->delete();
+            DB::table('anggota_kelas')
+                ->where('kelas_id', $kelas->id)
+                ->whereIn('user_id', User::withTrashed()
+                    ->where('sekolah_id', $kelas->sekolah_id)
+                    ->where('role', 'guru')
+                    ->pluck('id'))
+                ->delete();
 
-        $kelas->users()->attach($validated['wali_kelas_id']);
+            $kelas->users()->attach($validated['wali_kelas_id']);
 
-        $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
+            $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
+        });
 
         return back()->with('success', 'Kelas berhasil diperbarui.');
     }
@@ -97,8 +105,10 @@ class SekolahKelasController extends Controller
     {
         $this->authorizeKelas($kelas);
 
+        if ($kelas->users()->where('role', 'siswa')->exists()) {
+            return back()->with('error', 'Kelas masih memiliki siswa. Pindahkan atau luluskan dulu.');
+        }
         $kelas->delete();
-
         return back()->with('success', "Kelas {$kelas->nama} berhasil dihapus.");
     }
 
@@ -107,7 +117,10 @@ class SekolahKelasController extends Controller
         return $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'tahun_ajaran' => ['required', 'string', 'max:9'],
-            'wali_kelas_id' => ['required', 'exists:users,id'],
+            'wali_kelas_id' => ['required', Rule::exists('users', 'id')
+                ->where('sekolah_id', auth()->user()->sekolah_id)
+                ->where('role', 'guru')
+                ->whereNull('deleted_at')],
             'mata_pelajaran_ids' => ['nullable', 'array'],
             'mata_pelajaran_ids.*' => ['exists:mata_pelajarans,id'],
         ]);
@@ -115,14 +128,42 @@ class SekolahKelasController extends Controller
 
     protected function syncMataPelajaran(Kelas $kelas, array $mataPelajaranIds): void
     {
-        MataPelajaranKelas::where('kelas_id', $kelas->id)->delete();
+        $ids = array_map('intval', $mataPelajaranIds);
 
-        foreach ($mataPelajaranIds as $mataPelajaranId) {
+        $ada = MataPelajaranKelas::where('kelas_id', $kelas->id)
+            ->pluck('mata_pelajaran_id')->all();
+
+        MataPelajaranKelas::where('kelas_id', $kelas->id)
+            ->whereNotIn('mata_pelajaran_id', $ids)
+            ->delete();
+
+        foreach (array_diff($ids, $ada) as $id) {
             MataPelajaranKelas::create([
                 'kelas_id' => $kelas->id,
-                'mata_pelajaran_id' => $mataPelajaranId,
+                'mata_pelajaran_id' => $id,
             ]);
         }
+    }
+
+    public function selesai(Kelas $kelas): RedirectResponse
+    {
+        $this->authorizeKelas($kelas);
+
+        if ($kelas->status === 'selesai') {
+            return back()->with('error', 'Kelas ini sudah selesai.');
+        }
+
+        $masihAktif = $kelas->siswa()
+            ->whereHas('detailUser', fn($q) => $q->where('status', 'aktif'))
+            ->count();
+
+        if ($masihAktif > 0) {
+            return back()->with('error', "Masih ada {$masihAktif} siswa aktif di kelas ini. Pindahkan ke kelas baru atau ubah statusnya (lulus/keluar) dulu.");
+        }
+
+        $kelas->update(['status' => 'selesai']);
+
+        return back()->with('success', "Kelas {$kelas->nama} ditandai selesai.");
     }
 
     protected function authorizeKelas(Kelas $kelas): void
