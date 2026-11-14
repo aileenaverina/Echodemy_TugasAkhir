@@ -45,6 +45,10 @@ class RaportService
             return ['nama' => $mpk->mataPelajaran->nama, 'rekap' => $rekap];
         })->filter()->values();
 
+        if ($mapel->isEmpty()) {
+            return ['lengkap' => false, 'alasan' => ['Belum ada mata pelajaran yang berbobot.'], 'mapel' => $mapel];
+        }
+
         return ['lengkap' => empty($alasan), 'alasan' => $alasan, 'mapel' => $mapel];
     }
 

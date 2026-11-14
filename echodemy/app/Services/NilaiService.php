@@ -27,8 +27,10 @@ class NilaiService
             ->whereIn('status', ['dikumpulkan', 'telat', 'dinilai']);
 
         $sedangMengerjakan = $latihan->submissions->where('user_id', $userId)->where('status', 'draft')->isNotEmpty();
-        if ($submissions->isEmpty() && $sedangMengerjakan) {
-            return ['nilai' => null, 'status' => 'belum', 'sementara' => null];
+        if ($submissions->isEmpty()) {
+            return $sedangMengerjakan
+                ? ['nilai' => null, 'status' => 'belum', 'sementara' => null]
+                : $this->tanpaPengumpulan($latihan->batas_waktu);
         }
 
         $maks = $latihan->detailLatihans->sum('nilai');

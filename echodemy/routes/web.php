@@ -135,6 +135,10 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::post('/mata-pelajaran-kelas/{mataPelajaranKelas}/guru', [GuruMataPelajaranKelasController::class, 'addGuru'])->name('mata-pelajaran-kelas.guru.store');
     Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}/rekap-nilai', [GuruMataPelajaranKelasController::class, 'rekapNilai'])->name('mata-pelajaran-kelas.rekap');
     Route::delete('/mata-pelajaran-kelas/{mataPelajaranKelas}/guru/{guru}', [GuruMataPelajaranKelasController::class, 'removeGuru'])->name('mata-pelajaran-kelas.guru.destroy');
+
+    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'index'])->name('bobot.index');
+    Route::put('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'update'])->name('bobot.update');
+
     Route::post('/section/{bahanAjar}/toggle-lock', [GuruMataPelajaranKelasController::class, 'toggleLockSection'])->name('section.toggle-lock');
 
     Route::get('/share-targets', [GuruShareBahanAjarController::class, 'targets'])->name('share.targets');
@@ -159,15 +163,15 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
 
     Route::get('/latihan/{latihan}', [GuruLatihanController::class, 'show'])->name('latihan.show');
     Route::get('/latihan/{latihan}/soal', [GuruLatihanController::class, 'soal'])->name('latihan.soal');
-    Route::put('/latihan/{latihan}/submission/{submission}', [GuruLatihanController::class, 'updateNilai'])->name('latihan.submission.update');
-    Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('guru.koreksi.update');
-    Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('guru.koreksi.show');
+    Route::put('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'update'])->name('koreksi.update');
+    Route::get('/latihan/{latihan}/koreksi/{submission}', [GuruKoreksiController::class, 'show'])->name('koreksi.show');
     Route::put('/latihan/{latihan}/pengaturan', [GuruLatihanController::class, 'updatePengaturan'])->name('latihan.pengaturan.update');
     Route::get('/latihan/{latihan}/edit-soal', [GuruLatihanController::class, 'editSoal'])->name('latihan.edit-soal');
     Route::put('/latihan/{latihan}/edit-soal', [GuruLatihanController::class, 'updateSoal'])->name('latihan.soal.update');
     
     Route::put('/assignment/{assignment}/pengaturan', [GuruAssignmentController::class, 'updatePengaturan'])->name('assignment.pengaturan.update');
     Route::get('/assignment/{assignment}', [GuruAssignmentController::class, 'show'])->name('assignment.show');
+    Route::put('/assignment/{assignment}/hasil/{hasilAssignment}', [GuruAssignmentController::class, 'updateNilai'])->name('assignment.hasil.update');
 
     Route::get('/rapor', [GuruRaporController::class, 'index'])->name('rapor.index');
     Route::get('/rapor/kelas/{kelas}', [GuruRaporController::class, 'kelas'])->name('rapor.kelas');
@@ -177,6 +181,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::post('/rapor/kelas/{kelas}/terbitkan-semua', [GuruRaporController::class, 'terbitkanSemua'])->name('rapor.terbitkan-semua');
 
     Route::get('/log', [GuruLogController::class, 'index'])->name('log.index');
+
+    
 });
 
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
@@ -199,8 +205,7 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     Route::get('/notifikasi', [SiswaNotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::post('/notifikasi/{notif}/toggle', [SiswaNotifikasiController::class, 'toggle'])->name('notifikasi.toggle');
 
-    Route::get('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'index'])->name('bobot.index');
-    Route::put('/mata-pelajaran-kelas/{mataPelajaranKelas}/bobot', [GuruBobotController::class, 'update'])->name('bobot.update');
+    
 });
 
 Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {

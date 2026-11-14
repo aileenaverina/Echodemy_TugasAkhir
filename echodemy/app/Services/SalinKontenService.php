@@ -67,7 +67,6 @@ class SalinKontenService
         $baru->bahan_ajar_id = $target->id;
         $baru->file = $this->salinFile($a->file, 'assignment-files');
         $baru->persen_nilai_akhir = 0;
-        $baru->batas_waktu = null;
         $baru->is_lock = true;
         $baru->save();
         // hasil_assignments tidak ikut disalin
@@ -80,7 +79,6 @@ class SalinKontenService
         $baru = $l->replicate();
         $baru->bahan_ajar_id = $target->id;
         $baru->persen_nilai_akhir = 0;
-        $baru->batas_waktu = null;
         $baru->is_lock = true;
         $baru->save();
 

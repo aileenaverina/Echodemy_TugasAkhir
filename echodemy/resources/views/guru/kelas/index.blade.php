@@ -30,7 +30,7 @@
                     $isWali = $item->label === 'Wali Kelas';
                     $badgeClass = $isWali ? 'bg-periwinkle/60 text-hitam' : 'bg-amber/60 text-hitam';
                 @endphp
-                <a href="{{ route('guru.kelas.show', $item->kelas) }}"
+                <a href="{{ $isWali ? route('guru.kelas.show', $item->kelas) : route('guru.mata-pelajaran-kelas.show', $item->mpk) }}"
                     class="block bg-putih rounded-2xl shadow-sm p-5 hover:shadow-md transition">
                     <div class="flex items-start justify-between mb-2">
                         @if ($item->mata_pelajaran)

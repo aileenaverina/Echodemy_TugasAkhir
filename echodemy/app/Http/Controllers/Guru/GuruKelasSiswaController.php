@@ -7,6 +7,7 @@ use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GuruKelasSiswaController extends Controller
 {
@@ -18,7 +19,7 @@ class GuruKelasSiswaController extends Controller
 
         $siswaTersedia = User::where('sekolah_id', $kelas->sekolah_id)
             ->where('role', 'siswa')
-            ->whereDoesntHave('kelas', fn ($q) => $q->where('kelass.status', 'aktif'))
+            ->whereDoesntHave('kelas', fn($q) => $q->where('kelass.status', 'aktif'))
             ->orderBy('nama_lengkap')
             ->get();
 
@@ -30,10 +31,10 @@ class GuruKelasSiswaController extends Controller
         $this->authorizeWali($kelas);
 
         $validated = $request->validate([
-            'siswa_id' => ['required', 'exists:users,id'],
+            'siswa_id' => ['required', Rule::exists('users', 'id')->where('role', 'siswa')->where('sekolah_id', $kelas->sekolah_id)],
         ]);
 
-        $kelas->users()->attach($validated['siswa_id']);
+        $kelas->users()->syncWithoutDetaching([$validated['siswa_id']]);
 
         return back()->with('success', 'Siswa berhasil ditambahkan ke kelas.');
     }
@@ -42,6 +43,7 @@ class GuruKelasSiswaController extends Controller
     {
         $this->authorizeWali($kelas);
 
+        abort_unless($kelas->siswa->pluck('id')->contains($siswa->id), 404);
         $kelas->users()->detach($siswa->id);
 
         return back()->with('success', "{$siswa->nama_lengkap} berhasil dikeluarkan dari kelas.");

@@ -53,7 +53,7 @@
                 <tr class="border-b border-border text-left text-[11px] tracking-widest uppercase text-hitam2">
                     <th class="px-5 py-3 font-semibold">Nama</th>
                     <th class="px-5 py-3 font-semibold">Percobaan</th>
-                    <th class="px-5 py-3 font-semibold">Pengumpulan</th>
+                    <th class="px-5 py-3 font-semibold">Dimulai</th>
                     <th class="px-5 py-3 font-semibold">Nilai</th>
                     <th class="px-5 py-3 font-semibold">Aksi</th>
                 </tr>

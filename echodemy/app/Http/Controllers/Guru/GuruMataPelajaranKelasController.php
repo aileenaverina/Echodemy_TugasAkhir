@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\MataPelajaranKelas;
 use App\Models\User;
+use App\Services\NilaiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -99,7 +100,7 @@ class GuruMataPelajaranKelasController extends Controller
         $this->authorizePengajarAtauWali($mataPelajaranKelas);
 
         $validated = $request->validate([
-            'guru_id' => ['required', 'exists:users,id'],
+            'guru_id' => ['required', Rule::exists('users', 'id')->where('role', 'guru')->where('sekolah_id', $mataPelajaranKelas->kelas->sekolah_id)],
         ]);
 
         $mataPelajaranKelas->gurus()->syncWithoutDetaching([$validated['guru_id']]);

@@ -18,12 +18,14 @@ class GuruLatihanController extends Controller
     public function show(Latihan $latihan): View
     {
         $this->authorizeLatihan($latihan);
+        app(\App\Services\SubmissionService::class)->finalisasiKedaluwarsa($latihan->id);
 
         $kelas = $latihan->bahanAjar->mataPelajaranKelas->kelas;
         $totalSiswa = $kelas->siswa()->count();
 
         $submissions = Submission::where('latihan_id', $latihan->id)
-            ->with('siswa')
+            ->whereIn('status', ['dikumpulkan', 'telat', 'dinilai'])
+            ->with(['siswa', 'answers'])
             ->get()
             ->groupBy('user_id')
             ->map(function ($group) {
@@ -53,28 +55,6 @@ class GuruLatihanController extends Controller
         return view('guru.latihan.soal', compact('latihan'));
     }
 
-    public function updateNilai(Request $request, Latihan $latihan, Submission $submission): RedirectResponse
-    {
-        $this->authorizeLatihan($latihan);
-        abort_unless($submission->latihan_id === $latihan->id, 404);
-
-        $validated = $request->validate([
-            'nilai' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        // Simpan sebagai penyesuaian nilai manual di jawaban pertama (ringkas) — 
-        // idealnya nilai per-soal, tapi untuk override manual guru cukup di satu tempat
-        $submission->answers()->update(['nilai' => 0]);
-        $firstAnswer = $submission->answers()->first();
-        if ($firstAnswer) {
-            $firstAnswer->update(['nilai' => $validated['nilai']]);
-        }
-
-        $submission->update(['status' => 'dinilai']);
-
-        return back()->with('success', 'Nilai berhasil diperbarui.');
-    }
-
     public function updatePengaturan(Request $request, Latihan $latihan): RedirectResponse
     {
         $this->authorizeLatihan($latihan);
@@ -83,24 +63,18 @@ class GuruLatihanController extends Controller
             'judul'                => ['required', 'string', 'max:255'],
             'kategori'             => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'penilaian_percobaan'  => ['required', 'in:tertinggi,terakhir'],
-            'batas_waktu'          => ['nullable', 'date'],
+            'batas_waktu'          => ['required', 'date'],
             'maksimal_percobaan'   => ['required', 'integer', 'min:1'],
             'waktu_kerja'          => ['required', 'integer', 'min:1'],
             'persen_nilai_akhir'   => ['nullable', 'integer', 'min:0', 'max:100'],
             'is_random'            => ['nullable', 'boolean'],
         ]);
 
-        if ((int) ($validated['persen_nilai_akhir'] ?? 0) > 0 && empty($validated['batas_waktu'])) {
-            throw ValidationException::withMessages([
-                'batas_waktu' => 'Batas waktu wajib diisi untuk latihan yang masuk penilaian.',
-            ]);
-        }
-
         $latihan->update([
             'judul'               => $validated['judul'],
             'kategori'            => $validated['kategori'],
             'penilaian_percobaan' => $validated['penilaian_percobaan'],
-            'batas_waktu'         => $validated['batas_waktu'] ?? null,
+            'batas_waktu'         => $validated['batas_waktu'],
             'maksimal_percobaan'  => $validated['maksimal_percobaan'],
             'waktu_kerja'         => $validated['waktu_kerja'],
             'persen_nilai_akhir'  => $validated['persen_nilai_akhir'] ?? 0,
@@ -163,6 +137,14 @@ class GuruLatihanController extends Controller
                         "soal.$i.pilihan" => 'Soal ' . ($i + 1) . ': total persentase jawaban benar harus 100% (sekarang ' . $benar . '%).',
                     ]);
                 }
+            }
+            if (
+                $soal['tipe_soal'] === 'isian'
+                && collect($soal['jawaban'] ?? [])->filter(fn($j) => trim((string) $j) !== '')->isEmpty()
+            ) {
+                throw ValidationException::withMessages([
+                    "soal.$i.jawaban" => 'Soal ' . ($i + 1) . ': isi minimal satu jawaban benar.',
+                ]);
             }
         }
 

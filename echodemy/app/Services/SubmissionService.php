@@ -31,10 +31,11 @@ class SubmissionService
     }
 
     // Draft yang waktu kerjanya sudah habis tapi belum dikumpulkan (misal koneksi putus)
-    public function finalisasiKedaluwarsa(): void
+    public function finalisasiKedaluwarsa(?int $latihanId = null): void
     {
         Submission::with('latihan')
             ->where('status', 'draft')
+            ->when($latihanId, fn ($q) => $q->where('latihan_id', $latihanId))
             ->get()
             ->each(function (Submission $s) {
                 if (! $s->latihan) {

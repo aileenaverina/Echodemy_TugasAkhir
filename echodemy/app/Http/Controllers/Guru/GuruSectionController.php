@@ -63,7 +63,9 @@ class GuruSectionController extends Controller
             'file' => ['required_if:tipe,file', 'nullable', 'file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:20480'],
         ]);
 
-        $filePath = $request->hasFile('file') ? $request->file('file')->store('materi-files', 'public') : null;
+        $filePath = $validated['tipe'] === 'file' && $request->hasFile('file')
+            ? $request->file('file')->store('materi-files', 'public')
+            : null;
 
         Materi::create([
             'nama' => $validated['nama'],
@@ -90,7 +92,7 @@ class GuruSectionController extends Controller
             'kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'tipe_pengumpulan' => ['required', 'in:file,text,keduanya'],
             'file' => ['nullable', 'file', 'max:20480'],
-            'batas_waktu' => ['nullable', 'date', Rule::requiredIf(fn() => (int) $request->input('persen_nilai_akhir') > 0)],
+            'batas_waktu' => ['required', 'date'],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
@@ -101,12 +103,13 @@ class GuruSectionController extends Controller
             'kategori' => $validated['kategori'],
             'tipe_pengumpulan' => $validated['tipe_pengumpulan'],
             'file' => $filePath,
-            'batas_waktu' => $validated['batas_waktu'] ?? null,
-            'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? null,
+            'batas_waktu' => $validated['batas_waktu'],
+            'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? 0,
+            'nilai' => 100,
             'is_lock' => false,
         ]);
 
-        $this->notifySiswa($bahanAjar, $validated['judul'], $validated['batas_waktu'] ? \Carbon\Carbon::parse($validated['batas_waktu']) : null);
+        $this->notifySiswa($bahanAjar, $validated['judul'], \Carbon\Carbon::parse($validated['batas_waktu']));
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Tugas berhasil ditambahkan.');
@@ -120,7 +123,7 @@ class GuruSectionController extends Controller
             'judul' => ['required', 'string', 'max:255'],
             'kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'penilaian_percobaan' => ['required', 'in:tertinggi,terakhir'],
-            'batas_waktu' => ['nullable', 'date', Rule::requiredIf(fn() => (int) $request->input('persen_nilai_akhir') > 0)],
+            'batas_waktu' => ['required', 'date'],
             'maksimal_percobaan' => ['required', 'integer', 'min:1'],
             'waktu_kerja' => ['required', 'integer', 'min:1'],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -156,6 +159,14 @@ class GuruSectionController extends Controller
                     ]);
                 }
             }
+            if (
+                $soal['tipe_soal'] === 'isian'
+                && collect($soal['jawaban'] ?? [])->filter(fn($j) => trim((string) $j) !== '')->isEmpty()
+            ) {
+                throw ValidationException::withMessages([
+                    "soal.$i.jawaban" => 'Soal ' . ($i + 1) . ': isi minimal satu jawaban benar.',
+                ]);
+            }
         }
 
         DB::transaction(function () use ($validated, $bahanAjar, $request) {
@@ -163,10 +174,10 @@ class GuruSectionController extends Controller
                 'judul' => $validated['judul'],
                 'kategori' => $validated['kategori'],
                 'penilaian_percobaan' => $validated['penilaian_percobaan'],
-                'batas_waktu' => $validated['batas_waktu'] ?? null,
+                'batas_waktu' => $validated['batas_waktu'],
                 'maksimal_percobaan' => $validated['maksimal_percobaan'],
                 'waktu_kerja' => $validated['waktu_kerja'],
-                'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? null,
+                'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? 0,
                 'is_random' => $request->boolean('is_random'),
                 'is_lock' => false,
             ]);
@@ -196,7 +207,7 @@ class GuruSectionController extends Controller
             }
         });
 
-        $this->notifySiswa($bahanAjar, $validated['judul'], $validated['batas_waktu'] ? \Carbon\Carbon::parse($validated['batas_waktu']) : null);
+        $this->notifySiswa($bahanAjar, $validated['judul'], \Carbon\Carbon::parse($validated['batas_waktu']));
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Latihan berhasil ditambahkan.');

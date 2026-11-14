@@ -8,6 +8,7 @@ use App\Models\Latihan;
 use App\Models\Submission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class GuruKoreksiController extends Controller
@@ -16,6 +17,9 @@ class GuruKoreksiController extends Controller
     {
         $this->authorize($latihan);
         abort_unless($submission->latihan_id === $latihan->id, 404);
+        app(\App\Services\SubmissionService::class)->finalisasiKedaluwarsa($latihan->id);
+        $submission->refresh();
+        abort_if($submission->status === 'draft', 403, 'Siswa masih mengerjakan.');
 
         $answers = $submission->answers()->with('detailLatihan.pilihans')->get();
 
@@ -26,6 +30,9 @@ class GuruKoreksiController extends Controller
     {
         $this->authorize($latihan);
         abort_unless($submission->latihan_id === $latihan->id, 404);
+        app(\App\Services\SubmissionService::class)->finalisasiKedaluwarsa($latihan->id);
+        $submission->refresh();
+        abort_if($submission->status === 'draft', 403, 'Siswa masih mengerjakan.');
 
         $validated = $request->validate([
             'nilai' => ['required', 'array'],
@@ -33,12 +40,18 @@ class GuruKoreksiController extends Controller
             'nilai_akhir' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
+        $jawabans = $submission->answers()->with('detailLatihan')->get()->keyBy('id');
+
         foreach ($validated['nilai'] as $answerId => $nilai) {
-            Answer::where('id', $answerId)
-                ->where('submission_id', $submission->id)
-                ->update(['nilai' => $nilai]);
+            $jawaban = $jawabans->get((int) $answerId);
+            if ($jawaban && (float) $nilai > (float) $jawaban->detailLatihan->nilai) {
+                throw ValidationException::withMessages(["nilai.$answerId" => 'Nilai melebihi poin soal.']);
+            }
         }
 
+        foreach ($validated['nilai'] as $answerId => $nilai) {
+            $jawabans->get((int) $answerId)?->update(['nilai' => $nilai]);
+        }
         $submission->update([
             'status' => 'dinilai',
             'nilai_akhir' => $validated['nilai_akhir'] ?? null,

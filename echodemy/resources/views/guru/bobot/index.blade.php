@@ -94,7 +94,7 @@
                                 </select>
                             </td>
                             <td class="px-5 py-4">
-                                <input type="datetime-local" name="{{ $nm }}[batas_waktu]"
+                                <input type="datetime-local" name="{{ $nm }}[batas_waktu]" required
                                     value="{{ old($key . '.batas_waktu', $m->batas_waktu?->format('Y-m-d\TH:i')) }}"
                                     class="{{ $inputClass }}" @disabled(! $bisaEdit)>
                                 @if ($errors->has($key . '.batas_waktu'))
@@ -129,7 +129,7 @@
 
         @if ($bisaEdit && $rows->isNotEmpty())
             <div class="flex items-center justify-between mt-4">
-                <p class="text-xs text-hitam2">Bobot 0 berarti tidak masuk penilaian. Item dengan bobot lebih dari 0 wajib punya batas waktu.</p>
+                <p class="text-xs text-hitam2">Bobot 0 berarti tidak masuk nilai akhir. Semua item wajib punya batas waktu.</p>
                 <button type="submit" class="bg-ink text-cream text-sm font-medium rounded-lg px-5 py-2.5 hover:bg-hitam">Simpan Bobot</button>
             </div>
         @endif

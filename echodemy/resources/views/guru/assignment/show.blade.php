@@ -62,7 +62,7 @@
                                 {{ ucfirst($hasil->status) }}
                             </span>
                         </td>
-
+                        <td class="px-5 py-4">{{ $hasil->nilai ?? '-' }}</td>
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-2">
                                 @if ($hasil->file)
@@ -89,20 +89,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-8 text-center text-hitam2">Belum ada siswa yang mengumpulkan.
+                        <td colspan="6" class="px-5 py-8 text-center text-hitam2">Belum ada siswa yang mengumpulkan.
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-
-    <form id="mark-nilai-form" method="POST" class="hidden">
-        @csrf
-        @method('PUT')
-        <input type="hidden" name="nilai" value="100">
-    </form>
-
     <div id="nilai-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
         <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
         <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-sm p-6 my-auto">

@@ -51,21 +51,15 @@ class GuruAssignmentController extends Controller
             'judul'             => ['required', 'string', 'max:255'],
             'kategori'          => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'tipe_pengumpulan'  => ['required', 'in:file,text,keduanya'],
-            'batas_waktu'       => ['nullable', 'date'],
+            'batas_waktu' => ['required', 'date'],
             'persen_nilai_akhir' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
-
-        if ((int) ($validated['persen_nilai_akhir'] ?? 0) > 0 && empty($validated['batas_waktu'])) {
-            throw ValidationException::withMessages([
-                'batas_waktu' => 'Batas waktu wajib diisi untuk tugas yang masuk penilaian.',
-            ]);
-        }
 
         $assignment->update([
             'judul'             => $validated['judul'],
             'kategori'          => $validated['kategori'],
             'tipe_pengumpulan'  => $validated['tipe_pengumpulan'],
-            'batas_waktu'       => $validated['batas_waktu'] ?? null,
+            'batas_waktu'       => $validated['batas_waktu'],
             'persen_nilai_akhir' => $validated['persen_nilai_akhir'] ?? 0,
         ]);
 

@@ -23,6 +23,9 @@
     @if (session('success'))
         <div class="bg-teal/10 text-teal text-sm rounded-lg px-4 py-3 mb-4">{{ session('success') }}</div>
     @endif
+    @if (session('error'))
+        <div class="bg-coral/10 text-coral text-sm rounded-lg px-4 py-3 mb-4">{{ session('error') }}</div>
+    @endif
 
     <!-- Info Card -->
     <div class="bg-putih rounded-2xl shadow-sm p-5 mb-6 flex items-center justify-between">
@@ -261,6 +264,38 @@
         </button>
     @endif
 
+    <!-- Manajemen Guru Modal -->
+    <div id="manajemen-guru-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+        <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
+        <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-md p-6 my-auto">
+            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Manajemen Guru</p>
+            <h2 class="font-display font-semibold text-lg mb-4">Pengajar Mata Pelajaran</h2>
+
+            <div class="space-y-2 mb-4">
+                @foreach ($mataPelajaranKelas->gurus as $guru)
+                    <div class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-border">
+                        <span class="text-sm">{{ $guru->nama_lengkap }}</span>
+                        <form method="POST" class="remove-guru-form"
+                            action="{{ route('guru.mata-pelajaran-kelas.guru.destroy', [$mataPelajaranKelas, $guru]) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="text-xs text-coral font-semibold hover:underline">Hapus</button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="flex justify-between">
+                <button type="button" id="open-add-guru-btn"
+                    class="text-sm font-semibold text-coral hover:underline">+ Tambah Guru</button>
+                <button type="button"
+                    class="modal-close-btn text-sm font-medium text-hitam2 px-4 py-2 hover:text-ink">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Tambah Guru -->
     <div id="add-guru-modal"
         class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
@@ -428,7 +463,7 @@
                     <select name="target_bahan_ajar_id" id="share-item-section" required disabled
                         class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></select>
                 </div>
-                <p class="text-xs text-hitam2">Item disalin dalam keadaan terkunci, bobot 0, dan tanpa batas waktu.
+                <p class="text-xs text-hitam2">Item disalin dalam keadaan terkunci dan bobot 0. Batas waktu ikut dari aslinya, ubah di halaman Bobot.
                     Jawaban siswa tidak ikut disalin.</p>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button"
@@ -456,6 +491,11 @@
 
             $('#manajemen-guru-btn').on('click', function() {
                 $('#manajemen-guru-modal').removeClass('hidden');
+            });
+
+            $('#open-add-guru-btn').on('click', function() {
+                $('#manajemen-guru-modal').addClass('hidden');
+                $('#add-guru-modal').removeClass('hidden');
             });
 
             $('.remove-guru-form').on('submit', function(e) {

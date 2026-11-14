@@ -56,7 +56,7 @@
                     @if ($soal->tipe_soal === 'pilihan_ganda')
                         @php
                             $pilihans = $soal->is_random
-                                ? $soal->pilihans->shuffle()
+                                ? $soal->pilihans->sortBy(fn($p) => crc32($submission->id . '-' . $p->id))->values()
                                 : $soal->pilihans->sortBy('nomor_abjad');
                             $terpilih = json_decode($jawabanTersimpan[$soal->id] ?? '[]', true) ?: [];
                             $jumlahBenar = $soal->pilihans->where('persentase_correct', '>', 0)->count();
@@ -160,7 +160,12 @@
 
             function saveAnswer(callback) {
                 const data = $('#jawaban-form').serialize();
-                $.post(jawabUrl, data).always(function() {
+                $.ajax({
+                    url: jawabUrl,
+                    method: 'POST',
+                    data: data,
+                    timeout: 8000
+                }).always(function() {
                     if (callback) callback();
                 });
             }
@@ -200,33 +205,41 @@
 
             // Countdown timer
             const deadline = new Date('{{ $deadline->toIso8601String() }}').getTime();
+            let timerInterval;
+            let selesaiDipicu = false;
+
+            function kirimSelesai() {
+                const form = $('<form>', {
+                    method: 'POST',
+                    action: selesaiUrl
+                });
+                form.append('<input type="hidden" name="_token" value="{{ csrf_token() }}">');
+                $('body').append(form);
+                form.submit();
+            }
+
+            function waktuHabis() {
+                if (selesaiDipicu) return;
+                selesaiDipicu = true;
+                clearInterval(timerInterval);
+                $(window).off('beforeunload');
+                Swal.fire({
+                    title: 'Waktu Habis',
+                    text: 'Jawabanmu sedang dikumpulkan...',
+                    icon: 'warning',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                });
+                saveAnswer(kirimSelesai);
+            }
 
             function updateTimer() {
-                const now = new Date().getTime();
-                const distance = deadline - now;
+                const distance = deadline - new Date().getTime();
 
                 if (distance <= 0) {
                     $('#timer-display').text('00:00:00');
-                    Swal.fire({
-                        title: 'Waktu Habis',
-                        text: 'Jawaban kamu akan otomatis dikumpulkan.',
-                        icon: 'warning',
-                        confirmButtonColor: '#1C1A17',
-                        allowOutsideClick: false,
-                    }).then(function() {
-                        saveAnswer(function() {
-                            const form = $('<form>', {
-                                method: 'POST',
-                                action: selesaiUrl
-                            });
-                            form.append(
-                                '<input type="hidden" name="_token" value="{{ csrf_token() }}">'
-                            );
-                            $('body').append(form);
-                            form.submit();
-                        });
-                    });
-                    clearInterval(timerInterval);
+                    waktuHabis();
                     return;
                 }
 
@@ -241,7 +254,7 @@
             }
 
             updateTimer();
-            const timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(updateTimer, 1000);
 
             // Auto-save tiap ganti soal via "Sebelumnya" / klik nomor
             $(window).on('beforeunload', function() {

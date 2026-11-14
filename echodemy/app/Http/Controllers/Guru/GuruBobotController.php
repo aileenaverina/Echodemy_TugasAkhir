@@ -41,11 +41,11 @@ class GuruBobotController extends Controller
             'latihan.*.bobot' => ['required', 'integer', 'min:0', 'max:100'],
             'latihan.*.kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
             'latihan.*.penilaian_percobaan' => ['required', 'in:tertinggi,terakhir'],
-            'latihan.*.batas_waktu' => ['nullable', 'date'],
+            'latihan.*.batas_waktu' => ['required', 'date'],
             'assignment' => ['nullable', 'array'],
             'assignment.*.bobot' => ['required', 'integer', 'min:0', 'max:100'],
             'assignment.*.kategori' => ['required', 'in:harian,tengah_semester,akhir_semester'],
-            'assignment.*.batas_waktu' => ['nullable', 'date'],
+            'assignment.*.batas_waktu' => ['required', 'date'],
         ]);
 
         DB::transaction(function () use ($validated, $mataPelajaranKelas) {
@@ -72,19 +72,13 @@ class GuruBobotController extends Controller
 
         foreach ($rows as $id => $row) {
             abort_unless($items->has((int) $id), 403);
-
-            if ((int) $row['bobot'] > 0 && empty($row['batas_waktu'])) {
-                throw ValidationException::withMessages([
-                    "{$prefix}.{$id}.batas_waktu" => 'Batas waktu wajib diisi untuk item yang masuk penilaian.',
-                ]);
-            }
         }
 
         foreach ($rows as $id => $row) {
             $data = [
                 'persen_nilai_akhir' => (int) $row['bobot'],
                 'kategori' => $row['kategori'],
-                'batas_waktu' => $row['batas_waktu'] ?: null,
+                'batas_waktu' => $row['batas_waktu'],
             ];
 
             if (isset($row['penilaian_percobaan'])) {

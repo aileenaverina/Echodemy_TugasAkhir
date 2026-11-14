@@ -26,8 +26,7 @@
             @endforeach
         </div>
 
-        <button type="button" id="tambah-soal-btn"
-            class="mt-4 text-sm font-semibold text-coral hover:underline">
+        <button type="button" id="tambah-soal-btn" class="mt-4 text-sm font-semibold text-coral hover:underline">
             + Tambah Soal
         </button>
 
@@ -49,62 +48,73 @@
     </form>
 
     <script>
-    $(function () {
-        const abjad = ['A','B','C','D','E','F'];
+        $(function() {
+            const abjad = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-        function getSoalCount() {
-            return $('#soal-wrapper .soal-block').length;
-        }
+            function getSoalCount() {
+                return $('#soal-wrapper .soal-block').length;
+            }
 
-        function reindexAll() {
-            $('#soal-wrapper .soal-block').each(function (i) {
-                $(this).attr('data-index', i);
-                $(this).find('.soal-nomor').text(i + 1);
-                // Reindex semua name attribute
-                $(this).find('[name]').each(function () {
-                    const name = $(this).attr('name').replace(/soal\[\d+\]/, `soal[${i}]`);
-                    $(this).attr('name', name);
-                });
-                // Reindex pilihan
-                $(this).find('.pilihan-item').each(function (pi) {
-                    $(this).find('span').first().text(abjad[pi] || pi);
-                    $(this).find('[name]').each(function () {
-                        const name = $(this).attr('name').replace(/pilihan\[\d+\]/, `pilihan[${pi}]`);
+            function reindexAll() {
+                $('#soal-wrapper .soal-block').each(function(i) {
+                    $(this).attr('data-index', i);
+                    $(this).find('.soal-nomor').text(i + 1);
+                    // Reindex semua name attribute
+                    $(this).find('[name]').each(function() {
+                        const name = $(this).attr('name').replace(/soal\[\d+\]/, `soal[${i}]`);
                         $(this).attr('name', name);
                     });
-                });
-                // Reindex jawaban isian
-                $(this).find('.jawaban-item').each(function (ji) {
-                    $(this).find('[name]').each(function () {
-                        const name = $(this).attr('name').replace(/jawaban\[\d+\]/, `jawaban[${ji}]`);
-                        $(this).attr('name', name);
+                    // Reindex pilihan
+                    $(this).find('.pilihan-item').each(function(pi) {
+                        $(this).find('span').first().text(abjad[pi] || pi);
+                        $(this).find('[name]').each(function() {
+                            const name = $(this).attr('name').replace(/pilihan\[\d+\]/,
+                                `pilihan[${pi}]`);
+                            $(this).attr('name', name);
+                        });
+                    });
+                    // Reindex jawaban isian
+                    $(this).find('.jawaban-item').each(function(ji) {
+                        $(this).find('[name]').each(function() {
+                            const name = $(this).attr('name').replace(/jawaban\[\d+\]/,
+                                `jawaban[${ji}]`);
+                            $(this).attr('name', name);
+                        });
                     });
                 });
+                updateTotalPoin();
+            }
+
+            function updateTotalPoin() {
+                let total = 0;
+                $('.poin-input').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+                $('#total-poin').text(Math.round(total * 100) / 100);
+            }
+
+            // Tipe soal toggle
+            function aturSection(block) {
+                const tipe = block.find('.tipe-soal-select').val();
+                block.find('.pilihan-section').toggleClass('hidden', tipe !== 'pilihan_ganda')
+                    .find(':input').prop('disabled', tipe !== 'pilihan_ganda');
+                block.find('.isian-section').toggleClass('hidden', tipe !== 'isian')
+                    .find(':input').prop('disabled', tipe !== 'isian');
+                block.find('.esai-section').toggleClass('hidden', tipe !== 'esai');
+            }
+
+            $(document).on('change', '.tipe-soal-select', function() {
+                aturSection($(this).closest('.soal-block'));
             });
-            updateTotalPoin();
-        }
 
-        function updateTotalPoin() {
-            let total = 0;
-            $('.poin-input').each(function () {
-                total += parseFloat($(this).val()) || 0;
+            $('#soal-wrapper .soal-block').each(function() {
+                aturSection($(this));
             });
-            $('#total-poin').text(Math.round(total * 100) / 100);
-        }
 
-        // Tipe soal toggle
-        $(document).on('change', '.tipe-soal-select', function () {
-            const block = $(this).closest('.soal-block');
-            const tipe = $(this).val();
-            block.find('.pilihan-section').toggleClass('hidden', tipe !== 'pilihan_ganda');
-            block.find('.isian-section').toggleClass('hidden', tipe !== 'isian');
-            block.find('.esai-section').toggleClass('hidden', tipe !== 'esai');
-        });
-
-        // Tambah soal baru
-        $('#tambah-soal-btn').on('click', function () {
-            const i = getSoalCount();
-            const html = `
+            // Tambah soal baru
+            $('#tambah-soal-btn').on('click', function() {
+                const i = getSoalCount();
+                const html = `
             <div class="soal-block bg-putih rounded-2xl shadow-sm p-5" data-index="${i}">
                 <div class="flex items-center justify-between mb-4">
                     <p class="font-display font-semibold text-sm">Soal <span class="soal-nomor">${i+1}</span></p>
@@ -177,39 +187,45 @@
                     </div>
                 </div>
             </div>`;
-            $('#soal-wrapper').append(html);
-            updateTotalPoin();
-        });
-
-        // Hapus soal
-        $(document).on('click', '.hapus-soal-btn', function () {
-            if (getSoalCount() <= 1) {
-                Swal.fire({ title: 'Minimal 1 soal', icon: 'warning', confirmButtonColor: '#1C1A17' });
-                return;
-            }
-            Swal.fire({
-                title: 'Hapus soal ini?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#E8674A',
-                cancelButtonColor: '#5B5A55',
-                confirmButtonText: 'Ya, hapus',
-                cancelButtonText: 'Batal',
-            }).then(function (r) {
-                if (r.isConfirmed) {
-                    $(event.target).closest('.soal-block').remove();
-                    reindexAll();
-                }
+                $('#soal-wrapper').append(html);
+                aturSection($('#soal-wrapper .soal-block').last());
+                updateTotalPoin();
             });
-        });
 
-        // Tambah pilihan
-        $(document).on('click', '.tambah-pilihan-btn', function () {
-            const block = $(this).closest('.soal-block');
-            const i = block.data('index');
-            const pi = block.find('.pilihan-item').length;
-            if (pi >= 6) return;
-            const html = `
+            // Hapus soal
+            $(document).on('click', '.hapus-soal-btn', function() {
+                if (getSoalCount() <= 1) {
+                    Swal.fire({
+                        title: 'Minimal 1 soal',
+                        icon: 'warning',
+                        confirmButtonColor: '#1C1A17'
+                    });
+                    return;
+                }
+                const block = $(this).closest('.soal-block');
+                Swal.fire({
+                    title: 'Hapus soal ini?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#E8674A',
+                    cancelButtonColor: '#5B5A55',
+                    confirmButtonText: 'Ya, hapus',
+                    cancelButtonText: 'Batal',
+                }).then(function(r) {
+                    if (r.isConfirmed) {
+                        block.remove();
+                        reindexAll();
+                    }
+                });
+            });
+
+            // Tambah pilihan
+            $(document).on('click', '.tambah-pilihan-btn', function() {
+                const block = $(this).closest('.soal-block');
+                const i = block.attr('data-index');
+                const pi = block.find('.pilihan-item').length;
+                if (pi >= 6) return;
+                const html = `
             <div class="pilihan-item flex items-center gap-2">
                 <span class="w-6 text-xs font-semibold text-hitam2">${abjad[pi] || pi}</span>
                 <input type="text" name="soal[${i}][pilihan][${pi}][teks]" placeholder="Teks pilihan" required
@@ -218,42 +234,43 @@
                     class="w-20 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                 <button type="button" class="hapus-pilihan-btn text-coral text-lg leading-none">&times;</button>
             </div>`;
-            $(this).closest('.pilihan-section').find('.pilihan-list').append(html);
-        });
+                $(this).closest('.pilihan-section').find('.pilihan-list').append(html);
+            });
 
-        // Hapus pilihan
-        $(document).on('click', '.hapus-pilihan-btn', function () {
-            const list = $(this).closest('.pilihan-list');
-            if (list.find('.pilihan-item').length <= 2) return;
-            $(this).closest('.pilihan-item').remove();
-            reindexAll();
-        });
+            // Hapus pilihan
+            $(document).on('click', '.hapus-pilihan-btn', function() {
+                const list = $(this).closest('.pilihan-list');
+                if (list.find('.pilihan-item').length <= 2) return;
+                $(this).closest('.pilihan-item').remove();
+                reindexAll();
+            });
 
-        // Tambah variasi jawaban isian
-        $(document).on('click', '.tambah-jawaban-btn', function () {
-            const block = $(this).closest('.soal-block');
-            const i = block.data('index');
-            const ji = block.find('.jawaban-item').length;
-            const html = `
+            // Tambah variasi jawaban isian
+            $(document).on('click', '.tambah-jawaban-btn', function() {
+                const block = $(this).closest('.soal-block');
+                const i = block.attr('data-index');
+                const ji = block.find('.jawaban-item').length;
+                const html = `
             <div class="jawaban-item flex items-center gap-2">
                 <input type="text" name="soal[${i}][jawaban][${ji}]" placeholder="Jawaban ke-${ji+1}"
                     class="flex-1 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                 <button type="button" class="hapus-jawaban-btn text-coral text-lg leading-none">&times;</button>
             </div>`;
-            $(this).closest('.isian-section').find('.jawaban-list').append(html);
+                $(this).closest('.isian-section').find('.jawaban-list').append(html);
+            });
+
+            // Hapus variasi jawaban
+            $(document).on('click', '.hapus-jawaban-btn', function() {
+                const list = $(this).closest('.jawaban-list');
+                if (list.find('.jawaban-item').length <= 1) return;
+                $(this).closest('.jawaban-item').remove();
+                reindexAll();
+            });
+
+            // Update total poin saat input berubah
+            $(document).on('input', '.poin-input', updateTotalPoin);
+
+            updateTotalPoin();
         });
-
-        // Hapus variasi jawaban
-        $(document).on('click', '.hapus-jawaban-btn', function () {
-            const list = $(this).closest('.jawaban-list');
-            if (list.find('.jawaban-item').length <= 1) return;
-            $(this).closest('.jawaban-item').remove();
-        });
-
-        // Update total poin saat input berubah
-        $(document).on('input', '.poin-input', updateTotalPoin);
-
-        updateTotalPoin();
-    });
     </script>
 </x-app-layout>

@@ -34,7 +34,7 @@ class GuruKelasMataPelajaranController extends Controller
                 Rule::unique('mata_pelajaran_kelas')->where('kelas_id', $kelas->id),
             ],
             'guru_ids' => ['required', 'array', 'min:1'],
-            'guru_ids.*' => ['exists:users,id'],
+            'guru_ids.*' => [Rule::exists('users', 'id')->where('role', 'guru')->where('sekolah_id', $kelas->sekolah_id)],
         ]);
 
         $mpk = MataPelajaranKelas::create([
@@ -54,7 +54,7 @@ class GuruKelasMataPelajaranController extends Controller
 
         $validated = $request->validate([
             'guru_ids' => ['required', 'array', 'min:1'],
-            'guru_ids.*' => ['exists:users,id'],
+            'guru_ids.*' => [Rule::exists('users', 'id')->where('role', 'guru')->where('sekolah_id', $kelas->sekolah_id)],
         ]);
 
         $mataPelajaranKelas->gurus()->sync($validated['guru_ids']);

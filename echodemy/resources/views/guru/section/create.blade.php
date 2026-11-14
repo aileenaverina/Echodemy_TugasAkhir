@@ -206,7 +206,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold uppercase text-hitam2">Batas Waktu</label>
-                        <input type="datetime-local" name="batas_waktu"
+                        <input type="datetime-local" name="batas_waktu" required
                             class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                     </div>
                     <div>
@@ -222,8 +222,8 @@
                         <label class="text-xs font-semibold uppercase text-hitam2">Bobot Nilai Akhir (%)</label>
                         <input type="number" name="persen_nilai_akhir" min="0" max="100"
                             class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
-                        <p class="text-xs text-hitam2 mt-1">0 = tidak masuk penilaian. Kalau lebih dari 0, batas waktu
-                            wajib diisi.</p>
+                        <p class="text-xs text-hitam2 mt-1">0 = tidak masuk nilai akhir (cocok untuk latihan harian).
+                            Batas waktu tetap wajib diisi.</p>
                     </div>
                 </div>
                 <button type="submit"
@@ -254,7 +254,7 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="text-xs font-semibold uppercase text-hitam2">Batas Waktu</label>
-                            <input type="datetime-local" name="batas_waktu"
+                            <input type="datetime-local" name="batas_waktu" required
                                 class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                         </div>
                         <div>
@@ -291,9 +291,10 @@
                         <div>
                             <label class="text-xs font-semibold uppercase text-hitam2">Bobot Nilai Akhir (%)</label>
                             <input type="number" name="persen_nilai_akhir" min="0" max="100"
+                                value="0"
                                 class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
-                            <p class="text-xs text-hitam2 mt-1">0 = tidak masuk penilaian. Kalau lebih dari 0, batas
-                                waktu wajib diisi.</p>
+                            <p class="text-xs text-hitam2 mt-1">0 = tidak masuk nilai akhir (cocok untuk latihan
+                                harian). Batas waktu tetap wajib diisi.</p>
                         </div>
                         <label class="flex items-center gap-2 mt-7 text-sm">
                             <input type="checkbox" name="is_random" value="1"
@@ -331,7 +332,7 @@
 
             <div>
                 <label class="text-xs font-semibold uppercase text-hitam2">Pertanyaan</label>
-                <textarea name="" rows="2"
+                <textarea name="" rows="2" required
                     class="soal-pertanyaan mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"></textarea>
             </div>
 
@@ -354,7 +355,8 @@
             </div>
 
             <label class="flex items-center gap-2 text-sm">
-                <input type="checkbox" class="soal-is-random rounded border-border text-coral focus:ring-coral">
+                <input type="checkbox" value="1"
+                    class="soal-is-random rounded border-border text-coral focus:ring-coral">
                 Acak urutan pilihan A/B/C/D
             </label>
 
@@ -386,7 +388,7 @@
 
     <template id="pilihan-template">
         <div class="pilihan-item flex items-center gap-2">
-            <input type="text"
+            <input type="text" required
                 class="pilihan-teks flex-1 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"
                 placeholder="Teks pilihan">
             <div class="relative w-24 shrink-0">
@@ -404,7 +406,7 @@
 
     <template id="jawaban-isian-template">
         <div class="jawaban-isian-item flex items-center gap-2">
-            <input type="text"
+            <input type="text" required
                 class="jawaban-isian-teks flex-1 rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm"
                 placeholder="cth. Jakarta">
             <button type="button" class="remove-jawaban-isian-btn text-coral shrink-0">
@@ -602,11 +604,20 @@
             });
 
             $(document).on('click', '.remove-pilihan-btn', function() {
+                if ($(this).closest('.pilihan-list').find('.pilihan-item').length <= 2) return;
                 $(this).closest('.pilihan-item').remove();
                 reindexAll();
             });
 
             $(document).on('click', '.remove-soal-btn', function() {
+                if ($('#soal-list .soal-item').length <= 1) {
+                    Swal.fire({
+                        title: 'Minimal 1 soal',
+                        icon: 'warning',
+                        confirmButtonColor: '#1C1A17'
+                    });
+                    return;
+                }
                 $(this).closest('.soal-item').remove();
                 reindexAll();
             });

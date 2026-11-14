@@ -6,6 +6,10 @@
         <h1 class="font-display text-2xl font-semibold">Koreksi Jawaban — {{ $submission->siswa->nama_lengkap }}</h1>
     </x-slot>
 
+    @if ($errors->any())
+        <div class="bg-coral/10 text-coral text-sm rounded-lg px-4 py-3 mb-4">{{ $errors->first() }}</div>
+    @endif
+
     <form method="POST" action="{{ route('guru.koreksi.update', [$latihan, $submission]) }}" class="space-y-4">
         @csrf
         @method('PUT')

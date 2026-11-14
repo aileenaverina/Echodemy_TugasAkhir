@@ -80,7 +80,7 @@ class SiswaLatihanController extends Controller
         $soalList = $latihan->detailLatihans()->with('pilihans')->orderBy('nomor')->get();
 
         if ($latihan->is_random) {
-            $soalList = $soalList->shuffle()->values();
+            $soalList = $soalList->sortBy(fn($s) => crc32($submission->id . '-' . $s->id))->values();
         }
 
         $nomor = (int) $request->input('soal', 1);
@@ -114,6 +114,11 @@ class SiswaLatihanController extends Controller
     {
         $this->authorizeSubmission($latihan, $submission);
         abort_if($submission->status !== 'draft', 403);
+        $batas = $submission->created_at->copy()->addMinutes($latihan->waktu_kerja)->addSeconds(15);
+        if (now()->greaterThan($batas)) {
+            app(SubmissionService::class)->finalisasi($submission);
+            return response()->json(['success' => false, 'waktu_habis' => true], 403);
+        }
 
         $validated = $request->validate([
             'detail_latihan_id' => ['required', 'exists:detail_latihans,id'],
