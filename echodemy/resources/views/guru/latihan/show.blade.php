@@ -13,6 +13,9 @@
     @if (session('success'))
         <div class="bg-teal/10 text-teal text-sm rounded-lg px-4 py-3 mb-4">{{ session('success') }}</div>
     @endif
+    @if ($errors->any())
+        <div class="bg-coral/10 text-coral text-sm rounded-lg px-4 py-3 mb-4">{{ $errors->first() }}</div>
+    @endif
 
     <div class="flex items-center justify-between mb-6">
         <div class="bg-putih rounded-2xl shadow-sm p-5 flex items-center gap-10">
@@ -28,6 +31,16 @@
                 class="bg-cream2 text-ink text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-border">
                 Lihat Soal
             </a>
+            @if (!$adaYangMulai)
+                <a href="{{ route('guru.latihan.edit-soal', $latihan) }}"
+                    class="bg-amber/60 text-hitam text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-amber/70">
+                    Edit Soal
+                </a>
+            @endif
+            <button type="button" id="pengaturan-btn"
+                class="bg-cream2 text-ink text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-border">
+                Pengaturan
+            </button>
             <button type="button" id="edit-pengaturan-btn"
                 class="bg-cream2 text-ink text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-border">
                 Edit Pengaturan
@@ -154,8 +167,8 @@
                     </div>
                     <div>
                         <label class="text-xs font-semibold uppercase text-hitam2">Bobot (%)</label>
-                        <input type="number" name="persen_nilai_akhir" value="{{ $latihan->persen_nilai_akhir ?? 0 }}"
-                            min="0" max="100"
+                        <input type="number" name="persen_nilai_akhir"
+                            value="{{ $latihan->persen_nilai_akhir ?? 0 }}" min="0" max="100"
                             class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
                     </div>
                 </div>
@@ -175,6 +188,86 @@
             </form>
         </div>
     </div>
+    <!-- Modal Pengaturan -->
+    <div id="pengaturan-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+        <div class="modal-overlay absolute inset-0 bg-ink/40"></div>
+        <div class="relative bg-putih rounded-2xl shadow-lg w-full max-w-lg p-6 my-auto">
+            <p class="text-xs font-semibold tracking-widest text-coral uppercase mb-1">Pengaturan</p>
+            <h2 class="font-display font-semibold text-lg mb-4">Pengaturan Latihan</h2>
+
+            <form method="POST" action="{{ route('guru.latihan.pengaturan.update', $latihan) }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label class="text-xs font-semibold uppercase text-hitam2">Judul</label>
+                    <input type="text" name="judul" required value="{{ old('judul', $latihan->judul) }}"
+                        class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Kategori</label>
+                        <select name="kategori"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            @foreach (['harian' => 'Harian', 'tengah_semester' => 'Tengah Semester (UTS)', 'akhir_semester' => 'Akhir Semester (UAS)'] as $v => $l)
+                                <option value="{{ $v }}" @selected(old('kategori', $latihan->kategori) === $v)>{{ $l }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Nilai yang Diambil</label>
+                        <select name="penilaian_percobaan"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                            @foreach (['tertinggi' => 'Percobaan tertinggi', 'terakhir' => 'Percobaan terakhir'] as $v => $l)
+                                <option value="{{ $v }}" @selected(old('penilaian_percobaan', $latihan->penilaian_percobaan) === $v)>{{ $l }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Batas Waktu</label>
+                        <input type="datetime-local" name="batas_waktu" required
+                            value="{{ old('batas_waktu', $latihan->batas_waktu?->format('Y-m-d\TH:i')) }}"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Bobot Nilai Akhir (%)</label>
+                        <input type="number" name="persen_nilai_akhir" min="0" max="100"
+                            value="{{ old('persen_nilai_akhir', $latihan->persen_nilai_akhir ?? 0) }}"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Maks. Percobaan</label>
+                        <input type="number" name="maksimal_percobaan" min="1" required
+                            value="{{ old('maksimal_percobaan', $latihan->maksimal_percobaan) }}"
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-hitam2">Waktu Kerja (menit)</label>
+                        <input type="number" name="waktu_kerja" min="1" required
+                            value="{{ old('waktu_kerja', $latihan->waktu_kerja) }}" @readonly($adaYangMulai)
+                            class="mt-2 w-full rounded-lg border-border bg-cream2 focus:border-coral focus:ring-coral text-sm {{ $adaYangMulai ? 'opacity-60' : '' }}">
+                        @if ($adaYangMulai)
+                            <p class="text-[11px] text-hitam2 mt-1">Dikunci karena sudah ada siswa yang mulai.</p>
+                        @endif
+                    </div>
+                </div>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="hidden" name="is_random" value="0">
+                    <input type="checkbox" name="is_random" value="1" @checked(old('is_random', $latihan->is_random))
+                        class="rounded border-border text-coral focus:ring-coral">
+                    Acak urutan nomor soal
+                </label>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button"
+                        class="modal-close-btn text-sm font-medium text-hitam2 px-4 py-2 hover:text-ink">Batal</button>
+                    <button type="submit"
+                        class="bg-ink text-cream text-sm font-medium rounded-lg px-4 py-2 hover:bg-hitam">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script>
         $(function() {
 
@@ -184,6 +277,18 @@
             $('.modal-close-btn, .modal-overlay').on('click', function() {
                 $(this).closest('[id$="-modal"]').addClass('hidden');
             });
+
+            $('#pengaturan-btn').on('click', function() {
+                $('#pengaturan-modal').removeClass('hidden');
+            });
+
+            $('.modal-close-btn, .modal-overlay').on('click', function() {
+                $(this).closest('[id$="-modal"]').addClass('hidden');
+            });
+
+            @if ($errors->any())
+                $('#pengaturan-modal').removeClass('hidden');
+            @endif
         });
     </script>
 </x-app-layout>
