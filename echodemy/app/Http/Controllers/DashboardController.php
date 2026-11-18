@@ -8,6 +8,7 @@ use App\Models\MataPelajaran;
 use App\Models\Sekolah;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -89,11 +90,13 @@ class DashboardController extends Controller
                 ->with(['mataPelajaran', 'bahanAjars.materis'])
                 ->get()
                 ->map(function ($mpk) use ($siswa) {
-                    $totalMateri = $mpk->bahanAjars->flatMap->materis->count();
-                    $materiSelesai = $mpk->bahanAjars->flatMap->materis
-                        ->filter(function ($materi) use ($siswa) {
-                            return $materi->progresSiswa()->where('user_id', $siswa->id)->where('is_done', true)->exists();
-                        })
+                    $materis = $mpk->bahanAjars->where('is_lock', false)
+                        ->flatMap->materis->where('is_lock', false);
+                    $totalMateri = $materis->count();
+                    $materiSelesai = DB::table('progres_materi')
+                        ->where('user_id', $siswa->id)
+                        ->where('is_done', true)
+                        ->whereIn('materi_id', $materis->pluck('id'))
                         ->count();
 
                     return (object) [

@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\HasilAssignment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SiswaAssignmentController extends Controller
@@ -37,7 +38,7 @@ class SiswaAssignmentController extends Controller
         $wajibSalahSatu = $assignment->tipe_pengumpulan === 'keduanya';
 
         $rules = [
-            'file' => [$wajibSalahSatu || ! $butuhFile ? 'nullable' : 'required', 'file', 'max:20480'],
+            'file' => [$wajibSalahSatu || ! $butuhFile ? 'nullable' : 'required', 'file', 'mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,zip', 'max:20480'],
             'text' => [$wajibSalahSatu || ! $butuhText ? 'nullable' : 'required', 'string'],
         ];
 
@@ -80,6 +81,6 @@ class SiswaAssignmentController extends Controller
     {
         $kelas = $assignment->bahanAjar->mataPelajaranKelas->kelas;
         abort_unless($kelas->siswa->pluck('id')->contains(auth()->id()), 403);
-        abort_if($assignment->is_lock, 403);
+        abort_if($assignment->is_lock || $assignment->bahanAjar->is_lock, 403);
     }
 }

@@ -38,7 +38,10 @@ class NilaiService
             ? (float) $s->nilai_akhir
             : ($maks > 0 ? round($s->answers->sum('nilai') / $maks * 100, 2) : 0);
 
-        $dinilai = $submissions->where('status', 'dinilai');
+        $adaEsai = $latihan->detailLatihans->contains('tipe_soal', 'esai');
+        $dinilai = $submissions->filter(
+            fn($s) => $s->status === 'dinilai' || (! $adaEsai && $s->status === 'telat')
+        );
         $dipilih = $this->pilih($dinilai, $latihan->penilaian_percobaan, $skor);
 
         // Ada percobaan yang belum final (esai belum dikoreksi) -> belum bisa dianggap final

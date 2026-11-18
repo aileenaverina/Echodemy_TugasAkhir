@@ -15,7 +15,7 @@ class SiswaMateriController extends Controller
         $mataPelajaranKelas = $bahanAjar->mataPelajaranKelas;
 
         $isAnggota = $mataPelajaranKelas->kelas->siswa->pluck('id')->contains(auth()->id());
-        abort_unless($isAnggota && ! $materi->is_lock, 403);
+        abort_unless($isAnggota && ! $materi->is_lock && ! $bahanAjar->is_lock, 403);
 
         $ext = $materi->file ? strtolower(pathinfo($materi->file, PATHINFO_EXTENSION)) : null;
         $isPdf = $ext === 'pdf';

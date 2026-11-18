@@ -20,7 +20,7 @@ class SiswaLatihanController extends Controller
     {
         $siswa = auth()->user();
         $this->authorize($latihan);
-        $svc->finalisasiKedaluwarsa();
+        $svc->finalisasiKedaluwarsa($latihan->id);
 
         $latihan->load(['detailLatihans', 'submissions' => fn($q) => $q->where('user_id', $siswa->id)->with('answers')]);
 
@@ -62,6 +62,7 @@ class SiswaLatihanController extends Controller
             ->count();
 
         abort_if($percobaanDipakai >= $latihan->maksimal_percobaan, 403, 'Percobaan sudah habis.');
+        abort_if(! $latihan->detailLatihans()->exists(), 403, 'Latihan ini belum memiliki soal.');
 
         $submission = Submission::create([
             'latihan_id' => $latihan->id,
@@ -197,7 +198,7 @@ class SiswaLatihanController extends Controller
     {
         $kelas = $latihan->bahanAjar->mataPelajaranKelas->kelas;
         abort_unless($kelas->siswa->pluck('id')->contains(auth()->id()), 403);
-        abort_if($latihan->is_lock, 403);
+        abort_if($latihan->is_lock || $latihan->bahanAjar->is_lock, 403);
     }
 
     protected function authorizeSubmission(Latihan $latihan, Submission $submission): void

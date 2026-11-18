@@ -32,7 +32,7 @@ class Materi extends Model
 
     public function progresSiswa()
     {
-        return $this->belongsToMany(User::class, 'progres_materis', 'materi_id', 'user_id')
+        return $this->belongsToMany(User::class, 'progres_materi', 'materi_id', 'user_id')
             ->withPivot('is_done');
     }
 }

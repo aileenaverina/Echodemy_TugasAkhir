@@ -23,15 +23,15 @@ class SiswaMataPelajaranController extends Controller
 
         $bahanAjars = $mataPelajaranKelas->bahanAjars()
             ->where('is_lock', false)
-            ->with(['materis' => fn ($q) => $q->where('is_lock', false)])
-            ->with(['assignments' => fn ($q) => $q->where('is_lock', false)])
-            ->with(['latihans' => fn ($q) => $q->where('is_lock', false)])
+            ->with(['materis' => fn($q) => $q->where('is_lock', false)])
+            ->with(['assignments' => fn($q) => $q->where('is_lock', false)])
+            ->with(['latihans' => fn($q) => $q->where('is_lock', false)])
             ->orderBy('created_at')
             ->get();
 
         // Ambil progres materi siswa ini sekaligus, biar gak query berulang
         $materiIds = $bahanAjars->flatMap->materis->pluck('id');
-        $progresSelesai = DB::table('progres_materis')
+        $progresSelesai = DB::table('progres_materi')
             ->where('user_id', $siswa->id)
             ->whereIn('materi_id', $materiIds)
             ->where('is_done', true)
@@ -39,7 +39,10 @@ class SiswaMataPelajaranController extends Controller
             ->toArray();
 
         return view('siswa.mata-pelajaran-kelas.show', compact(
-            'mataPelajaranKelas', 'bahanAjars', 'jumlahSiswa', 'progresSelesai'
+            'mataPelajaranKelas',
+            'bahanAjars',
+            'jumlahSiswa',
+            'progresSelesai'
         ));
     }
 
@@ -47,20 +50,24 @@ class SiswaMataPelajaranController extends Controller
     {
         $siswa = auth()->user();
 
-        $existing = DB::table('progres_materis')
+        $kelas = $materi->bahanAjar->mataPelajaranKelas->kelas;
+        abort_unless($kelas->siswa->pluck('id')->contains($siswa->id), 403);
+        abort_if($materi->is_lock || $materi->bahanAjar->is_lock, 403);
+
+        $existing = DB::table('progres_materi')
             ->where('user_id', $siswa->id)
             ->where('materi_id', $materi->id)
             ->first();
 
         if ($existing) {
             $isDone = ! $existing->is_done;
-            DB::table('progres_materis')
+            DB::table('progres_materi')
                 ->where('user_id', $siswa->id)
                 ->where('materi_id', $materi->id)
                 ->update(['is_done' => $isDone]);
         } else {
             $isDone = true;
-            DB::table('progres_materis')->insert([
+            DB::table('progres_materi')->insert([
                 'user_id' => $siswa->id,
                 'materi_id' => $materi->id,
                 'is_done' => true,

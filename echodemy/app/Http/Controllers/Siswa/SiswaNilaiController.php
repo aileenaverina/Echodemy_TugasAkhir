@@ -14,7 +14,7 @@ class SiswaNilaiController extends Controller
     {
         $siswa = auth()->user();
         $kelas = $siswa->kelas()->where('status', 'aktif')->first();
-        $semester = (int) $request->input('semester', 1);
+        $semester = in_array((int) $request->input('semester'), [1, 2], true) ? (int) $request->input('semester') : 1;
 
         $mataPelajaranKelasList = $kelas ? $kelas->penugasanMataPelajaran()->with('mataPelajaran')->get() : collect();
         $activeMpk = $mataPelajaranKelasList->firstWhere('id', (int) $request->input('mapel', $mataPelajaranKelasList->first()?->id));
