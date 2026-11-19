@@ -74,7 +74,7 @@
                         @endforeach
                     </select>
                     @if ($siswaTersedia->isEmpty())
-                        <p class="text-xs text-hitam2 mt-2">Tidak ada siswa yang tersedia — semua siswa sudah masuk kelas aktif lain.</p>
+                        <p class="text-xs text-hitam2 mt-2">Tidak ada siswa yang tersedia - semua siswa sudah masuk kelas aktif lain.</p>
                     @endif
                 </div>
 

@@ -32,7 +32,7 @@
                     <p class="text-sm text-hitam2">Variasi jawaban benar: <span
                             class="font-medium text-ink">{{ implode(', ', $detail->jawaban ?? []) }}</span></p>
                 @else
-                    <p class="text-sm text-hitam2 italic">Esai (jawaban panjang) — dinilai manual</p>
+                    <p class="text-sm text-hitam2 italic">Esai (jawaban panjang) - dinilai manual</p>
                 @endif
             </div>
         @endforeach

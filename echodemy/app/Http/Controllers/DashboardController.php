@@ -7,13 +7,14 @@ use App\Models\Log;
 use App\Models\MataPelajaran;
 use App\Models\Sekolah;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         return match (auth()->user()->role?->value) {
             'admin' => $this->admin(),
