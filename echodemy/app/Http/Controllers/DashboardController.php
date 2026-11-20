@@ -101,6 +101,7 @@ class DashboardController extends Controller
                         ->count();
 
                     return (object) [
+                        'mpk_id' => $mpk->id,
                         'mata_pelajaran' => $mpk->mataPelajaran,
                         'total_materi' => $totalMateri,
                         'materi_selesai' => $materiSelesai,

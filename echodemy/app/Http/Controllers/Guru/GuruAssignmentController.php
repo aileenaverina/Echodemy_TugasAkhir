@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\HasilAssignment;
+use App\Models\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -38,6 +39,12 @@ class GuruAssignmentController extends Controller
         $hasilAssignment->update([
             'nilai' => $validated['nilai'],
             'status' => 'dinilai',
+        ]);
+
+        Log::create([
+            'deskripsi' => "Memberi nilai tugas \"{$assignment->judul}\" untuk {$hasilAssignment->siswa->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $assignment->bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
         ]);
 
         return back()->with('success', 'Nilai berhasil disimpan.');

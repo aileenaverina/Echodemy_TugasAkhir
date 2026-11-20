@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sekolah;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
+use App\Models\Log;
 use App\Models\MataPelajaran;
 use App\Models\MataPelajaranKelas;
 use App\Models\User;
@@ -70,6 +71,12 @@ class SekolahKelasController extends Controller
             $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
         });
 
+        Log::create([
+            'deskripsi' => "Menambah kelas {$validated['nama']}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         return back()->with('success', 'Kelas berhasil ditambahkan.');
     }
 
@@ -98,6 +105,12 @@ class SekolahKelasController extends Controller
             $this->syncMataPelajaran($kelas, $validated['mata_pelajaran_ids'] ?? []);
         });
 
+        Log::create([
+            'deskripsi' => "Mengedit kelas {$kelas->nama}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         return back()->with('success', 'Kelas berhasil diperbarui.');
     }
 
@@ -109,6 +122,13 @@ class SekolahKelasController extends Controller
             return back()->with('error', 'Kelas masih memiliki siswa. Pindahkan atau luluskan dulu.');
         }
         $kelas->delete();
+
+        Log::create([
+            'deskripsi' => "Menghapus kelas {$kelas->nama}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+        
         return back()->with('success', "Kelas {$kelas->nama} berhasil dihapus.");
     }
 

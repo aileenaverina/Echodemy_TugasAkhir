@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\DetailUser;
 use App\Models\Kelas;
+use App\Models\Log;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -110,6 +111,12 @@ class SekolahSiswaController extends Controller
             ]);
         });
 
+        Log::create([
+            'deskripsi' => "Menambah siswa {$validated['nama_lengkap']}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         return back()->with('success', 'Akun siswa dan orang tua berhasil dibuat.');
     }
 
@@ -145,6 +152,12 @@ class SekolahSiswaController extends Controller
             $siswa->kelas()->sync([$validated['kelas_id']]);
         });
 
+        Log::create([
+            'deskripsi' => "Mengedit data siswa {$siswa->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         return back()->with('success', 'Data siswa berhasil diperbarui.');
     }
 
@@ -156,6 +169,12 @@ class SekolahSiswaController extends Controller
             $this->findOrtu($siswa)?->delete();
             $siswa->delete();
         });
+
+        Log::create([
+            'deskripsi' => "Menghapus siswa {$siswa->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
 
         return back()->with('success', "Akun siswa {$siswa->nama_lengkap} berhasil dihapus.");
     }

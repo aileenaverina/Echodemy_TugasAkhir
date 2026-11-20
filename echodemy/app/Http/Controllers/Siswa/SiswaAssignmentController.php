@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\HasilAssignment;
+use App\Models\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -74,6 +75,12 @@ class SiswaAssignmentController extends Controller
             ]
         );
 
+        Log::create([
+            'deskripsi' => ($hasilLama ? "Mengedit" : "Mengumpulkan") . " tugas \"{$assignment->judul}\"",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $assignment->bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
+        ]);
+        
         return redirect()->route('siswa.assignment.show', $assignment)->with('success', 'Tugas berhasil dikumpulkan.');
     }
 

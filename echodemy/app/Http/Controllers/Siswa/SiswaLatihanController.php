@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Answer;
 use App\Models\DetailLatihan;
 use App\Models\Latihan;
+use App\Models\Log;
 use App\Models\Submission;
 use App\Services\NilaiService;
 use App\Services\SubmissionService;
@@ -167,6 +168,12 @@ class SiswaLatihanController extends Controller
 
         if ($submission->status === 'draft') {
             $svc->finalisasi($submission);
+
+            Log::create([
+                'deskripsi' => "Mengumpulkan latihan \"{$latihan->judul}\"",
+                'user_id'   => auth()->id(),
+                'sekolah_id' => $latihan->bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
+            ]);
         }
 
         return redirect()->route('siswa.latihan.show', $latihan)->with('success', 'Latihan berhasil dikumpulkan.');

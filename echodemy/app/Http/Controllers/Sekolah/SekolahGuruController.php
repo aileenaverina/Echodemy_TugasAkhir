@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Mail\GuruAccountCreatedMail;
 use App\Models\DetailUser;
+use App\Models\Log;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,12 @@ class SekolahGuruController extends Controller
             return $guru;
         });
 
+        Log::create([
+            'deskripsi' => "Menambah guru {$guru->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         try {
             Mail::to($guru->email)->send(new GuruAccountCreatedMail($guru, $plainPassword));
         } catch (\Throwable $e) {
@@ -124,6 +131,12 @@ class SekolahGuruController extends Controller
             ]);
         });
 
+        Log::create([
+            'deskripsi' => "Mengedit data guru {$guru->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
+
         return back()->with('success', 'Data guru berhasil diperbarui.');
     }
 
@@ -140,6 +153,12 @@ class SekolahGuruController extends Controller
         }
 
         $guru->delete();
+
+        Log::create([
+            'deskripsi' => "Menghapus guru {$guru->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => auth()->user()->sekolah_id,
+        ]);
 
         return back()->with('success', "Akun guru {$guru->nama_lengkap} berhasil dihapus.");
     }

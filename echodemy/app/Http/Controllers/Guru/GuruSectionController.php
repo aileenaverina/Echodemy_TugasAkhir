@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\BahanAjar;
 use App\Models\DetailLatihan;
+use App\Models\Log;
 use App\Models\Materi;
 use App\Models\Pilihan;
 use Illuminate\Http\RedirectResponse;
@@ -79,6 +80,12 @@ class GuruSectionController extends Controller
 
         $this->notifySiswa($bahanAjar, $validated['nama']);
 
+        Log::create([
+            'deskripsi' => "Menambah materi \"{$validated['nama']}\" di {$bahanAjar->mataPelajaranKelas->mataPelajaran->nama}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
+        ]);
+
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Materi berhasil ditambahkan.');
     }
@@ -110,6 +117,12 @@ class GuruSectionController extends Controller
         ]);
 
         $this->notifySiswa($bahanAjar, $validated['judul'], \Carbon\Carbon::parse($validated['batas_waktu']));
+
+        Log::create([
+            'deskripsi' => "Menambah tugas \"{$validated['judul']}\" di {$bahanAjar->mataPelajaranKelas->mataPelajaran->nama}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
+        ]);
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Tugas berhasil ditambahkan.');
@@ -208,6 +221,12 @@ class GuruSectionController extends Controller
         });
 
         $this->notifySiswa($bahanAjar, $validated['judul'], \Carbon\Carbon::parse($validated['batas_waktu']));
+
+        Log::create([
+            'deskripsi' => "Menambah latihan \"{$validated['judul']}\" di {$bahanAjar->mataPelajaranKelas->mataPelajaran->nama}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
+        ]);
 
         return redirect()->route('guru.mata-pelajaran-kelas.show', $bahanAjar->mataPelajaranKelas)
             ->with('success', 'Latihan berhasil ditambahkan.');

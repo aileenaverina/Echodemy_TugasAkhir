@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\Answer;
 use App\Models\Latihan;
+use App\Models\Log;
 use App\Models\Submission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,12 @@ class GuruKoreksiController extends Controller
         $submission->update([
             'status' => 'dinilai',
             'nilai_akhir' => $validated['nilai_akhir'] ?? null,
+        ]);
+
+        Log::create([
+            'deskripsi' => "Memberi nilai latihan \"{$latihan->judul}\" untuk {$submission->siswa->nama_lengkap}",
+            'user_id'   => auth()->id(),
+            'sekolah_id' => $latihan->bahanAjar->mataPelajaranKelas->kelas->sekolah_id,
         ]);
 
         return redirect()->route('guru.latihan.show', $latihan)->with('success', 'Nilai berhasil disimpan.');
